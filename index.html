@@ -442,6 +442,17 @@
 
             <div class="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-sm">
                 <form id="profile-form" onsubmit="handleProfileFormSubmit(event)" class="space-y-6">
+                    <!-- User UID Display Box -->
+                    <div class="p-4 bg-blue-50/60 rounded-2xl border border-blue-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 block mb-1"><i class="fa-solid fa-id-badge mr-1"></i> User ID / UID Akun</span>
+                            <code id="display-user-uid" class="text-xs font-mono font-bold text-slate-700 bg-white px-2.5 py-1 rounded-lg border border-blue-200 inline-block">Memuat UID...</code>
+                        </div>
+                        <button type="button" onclick="copyUserUid()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center space-x-1.5 self-start sm:self-center">
+                            <i class="fa-regular fa-copy"></i>
+                            <span>Salin UID</span>
+                        </button>
+                    </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Nama Lengkap</label>
@@ -841,7 +852,8 @@
                         currentUser = user;
                         document.getElementById('auth-screen').classList.add('hidden');
                         document.getElementById('app-layout').classList.remove('hidden');
-                        document.getElementById('profile-email').value = user.email || 'user@logkerja.pro';
+                        document.getElementById('profile-email').value = user.email || 'user@logkerja.pro';                        
+                        document.getElementById('display-user-uid').textContent = user.uid;
                         await loadUserProfile(user.uid);
                         setupRealtimeListeners(user.uid);
                         if (isManagerMode) {
@@ -919,6 +931,7 @@
                     
                     document.getElementById('auth-screen').classList.add('hidden');
                     document.getElementById('app-layout').classList.remove('hidden');
+                    document.getElementById('display-user-uid').textContent = targetUid;
                     await loadUserProfile(targetUid);
                     setupRealtimeListeners(targetUid);
                     applyManagerRestrictions();
@@ -1087,6 +1100,17 @@
             } catch (err) {
                 hideLoader();
                 alert('Gagal menyimpan profil: ' + err.message);
+            }
+        }
+
+        function copyUserUid() {
+            const uidText = document.getElementById('display-user-uid').textContent;
+            if (uidText && uidText !== 'Memuat UID...') {
+                navigator.clipboard.writeText(uidText).then(() => {
+                    alert('UID berhasil disalin ke clipboard!');
+                }).catch(err => {
+                    alert('Gagal menyalin UID: ' + err);
+                });
             }
         }
 
