@@ -47,12 +47,12 @@
     <!-- Firebase SDK Imports (Modular v11) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInAnonymously, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInAnonymously, signOut, deleteUser, updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, addDoc, setDoc, updateDoc, deleteDoc, getDoc, onSnapshot, query, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
 
         window.firebaseModules = {
-            initializeApp, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInAnonymously, signOut, onAuthStateChanged,
+            initializeApp, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInAnonymously, signOut, deleteUser, updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential, onAuthStateChanged,
             getFirestore, collection, doc, addDoc, setDoc, updateDoc, deleteDoc, getDoc, onSnapshot, query, getDocs, getAnalytics
         };
     </script>
@@ -343,7 +343,7 @@
             <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
                 <div class="relative">
                     <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400"><i class="fa-solid fa-magnifying-glass text-xs"></i></span>
-                    <input type="text" id="table-search" oninput="renderLogsTable()" placeholder="Cari judul, deskripsi, PIC, catatan..." class="w-full pl-11 pr-24 py-3 bg-slate-50/80 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all">
+                    <input type="text" id="table-search" oninput="renderLogsTable()" placeholder="Cari judul, program, modul, PIC, catatan..." class="w-full pl-11 pr-24 py-3 bg-slate-50/80 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all">
                     <button onclick="renderLogsTable()" class="absolute right-1.5 top-1.5 bottom-1.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all">Cari</button>
                 </div>
 
@@ -413,12 +413,12 @@
                         <thead>
                             <tr class="bg-slate-50/80 border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                                 <th class="py-3.5 px-6">Tanggal</th>
-                                <th class="py-3.5 px-4">Judul & Kategori</th>
+                                <th class="py-3.5 px-4">Judul & Program / Modul</th>
                                 <th class="py-3.5 px-4">PIC</th>
                                 <th class="py-3.5 px-4">Prioritas</th>
                                 <th class="py-3.5 px-4">Progress</th>
                                 <th class="py-3.5 px-4">Status</th>
-                                <th class="py-3.5 px-4">Deadline</th>
+                                <th class="py-3.5 px-4">Timeline (Mulai - Selesai)</th>
                                 <th id="th-aksi" class="py-3.5 px-6 text-right">Aksi</th>
                             </tr>
                         </thead>
@@ -437,30 +437,48 @@
             <div>
                 <span class="text-xs font-bold uppercase tracking-wider text-blue-600">Pengaturan Akun</span>
                 <h2 class="text-2xl font-black text-slate-900 tracking-tight mt-0.5">Profil Pengguna</h2>
-                <p id="profile-subtitle" class="text-xs text-slate-500 mt-1">Kelola informasi data pribadi dan profesional Anda di sini.</p>
+                <p id="profile-subtitle" class="text-xs text-slate-500 mt-1">Kelola informasi data pribadi, email, dan keamanan password Anda di sini.</p>
             </div>
 
-            <div class="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-sm">
-                <form id="profile-form" onsubmit="handleProfileFormSubmit(event)" class="space-y-6">
-                    <!-- User UID Display Box -->
-                    <div class="p-4 bg-blue-50/60 rounded-2xl border border-blue-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div>
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 block mb-1"><i class="fa-solid fa-id-badge mr-1"></i> User ID / UID Akun</span>
-                            <code id="display-user-uid" class="text-xs font-mono font-bold text-slate-700 bg-white px-2.5 py-1 rounded-lg border border-blue-200 inline-block">Memuat UID...</code>
-                        </div>
-                        <button type="button" onclick="copyUserUid()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center space-x-1.5 self-start sm:self-center">
-                            <i class="fa-regular fa-copy"></i>
-                            <span>Salin UID</span>
-                        </button>
+            <div class="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-6">
+                <!-- User UID Display Box -->
+                <div class="p-4 bg-blue-50/60 rounded-2xl border border-blue-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 block mb-1"><i class="fa-solid fa-id-badge mr-1"></i> User ID / UID Akun</span>
+                        <code id="display-user-uid" class="text-xs font-mono font-bold text-slate-700 bg-white px-2.5 py-1 rounded-lg border border-blue-200 inline-block">Memuat UID...</code>
                     </div>
+                    <button type="button" onclick="copyUserUid()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center space-x-1.5 self-start sm:self-center">
+                        <i class="fa-regular fa-copy"></i>
+                        <span>Salin UID</span>
+                    </button>
+                </div>
+
+                <form id="profile-form" onsubmit="handleProfileFormSubmit(event)" class="space-y-6">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Nama Lengkap</label>
                             <input type="text" id="profile-name" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" placeholder="Mochamad Fuad Asyhary">
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Email</label>
-                            <input type="email" id="profile-email" disabled class="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-2xl text-xs text-slate-500 cursor-not-allowed">
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Email Akun (Login)</label>
+                            <input type="email" id="profile-email" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" placeholder="nama@perusahaan.com">
+                        </div>
+                    </div>
+
+                    <!-- Bagian Ubah Password -->
+                    <div class="p-5 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-4">
+                        <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center">
+                            <i class="fa-solid fa-key text-blue-600 mr-2"></i> Ubah Password (Opsional)
+                        </h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Password Baru</label>
+                                <input type="password" id="profile-new-password" autocomplete="new-password" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="Biarkan kosong jika tidak diubah">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Password Saat Ini (Diperlukan jika ganti email/password)</label>
+                                <input type="password" id="profile-current-password" autocomplete="current-password" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="••••••••">
+                            </div>
                         </div>
                     </div>
 
@@ -498,8 +516,12 @@
                         <textarea id="profile-home-address" rows="2" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" placeholder="Alamat domisili tempat tinggal..."></textarea>
                     </div>
 
-                    <div id="profile-submit-container" class="pt-4 border-t border-slate-100 flex justify-end">
-                        <button type="submit" class="px-6 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-bold transition-all shadow-md shadow-blue-200 flex items-center space-x-2">
+                    <div id="profile-submit-container" class="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <button type="button" onclick="handleDeleteAccount()" id="btn-delete-account" class="w-full sm:w-auto px-5 py-3 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-2xl text-xs font-bold transition-all flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-user-xmark"></i>
+                            <span>Hapus Akun & Data</span>
+                        </button>
+                        <button type="submit" class="w-full sm:w-auto px-6 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-bold transition-all shadow-md shadow-blue-200 flex items-center justify-center space-x-2">
                             <i class="fa-solid fa-floppy-disk"></i>
                             <span>Simpan Perubahan Profil</span>
                         </button>
@@ -540,6 +562,18 @@
                     <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Judul Tugas / Pekerjaan</label>
                     <input type="text" id="log-title" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" placeholder="Misal: New Requirement ZFI029">
                 </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Nama Program</label>
+                        <input type="text" id="log-program-name" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" placeholder="Misal: ZFI_REPORT_SALES">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Modul Program</label>
+                        <input type="text" id="log-module-name" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" placeholder="Misal: FI / CO / MM / SD / BW">
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Kategori / Proyek</label>
@@ -558,16 +592,22 @@
                         <input type="text" id="log-pic" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" placeholder="Misal: Pak Yahya">
                     </div>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Tanggal Mulai</label>
                         <input type="date" id="log-date" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Deadline / Tenggat</label>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Tanggal Selesai (Aktual)</label>
+                        <input type="date" id="log-completion-date" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Deadline / Target</label>
                         <input type="date" id="log-deadline" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all">
                     </div>
                 </div>
+
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Prioritas</label>
@@ -653,6 +693,17 @@
             </div>
 
             <div class="p-6 space-y-6 text-xs max-h-[70vh] overflow-y-auto">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-blue-50/40 rounded-2xl border border-blue-100">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 block mb-1"><i class="fa-solid fa-code mr-1"></i> Nama Program</span>
+                        <span id="detail-program-name" class="font-bold text-slate-800 font-mono"></span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 block mb-1"><i class="fa-solid fa-cubes mr-1"></i> Modul Program</span>
+                        <span id="detail-module-name" class="font-bold text-slate-800"></span>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
                     <div>
                         <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Kategori</span>
@@ -672,10 +723,14 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                     <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                         <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1"><i class="fa-regular fa-calendar mr-1"></i> Tanggal Mulai</span>
                         <span id="detail-date" class="font-bold text-slate-800"></span>
+                    </div>
+                    <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600 block mb-1"><i class="fa-solid fa-calendar-check mr-1"></i> Tanggal Selesai</span>
+                        <span id="detail-completion-date" class="font-bold text-emerald-700"></span>
                     </div>
                     <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                         <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1"><i class="fa-regular fa-clock mr-1"></i> Deadline</span>
@@ -738,12 +793,12 @@
                             <thead>
                                 <tr class="bg-slate-50/80 border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                                     <th class="py-3 px-4">Tanggal</th>
-                                    <th class="py-3 px-4">Judul & Kategori</th>
+                                    <th class="py-3 px-4">Judul & Program / Modul</th>
                                     <th class="py-3 px-4">PIC</th>
                                     <th class="py-3 px-4">Prioritas</th>
                                     <th class="py-3 px-4">Progress</th>
                                     <th class="py-3 px-4">Status</th>
-                                    <th class="py-3 px-4">Deadline</th>
+                                    <th class="py-3 px-4">Timeline (Mulai - Selesai)</th>
                                 </tr>
                             </thead>
                             <tbody id="dash-modal-table-body" class="divide-y divide-slate-100 text-xs">
@@ -844,22 +899,23 @@
 
                 const todayStr = new Date().toISOString().split('T')[0];
                 document.getElementById('log-date').value = todayStr;
+                document.getElementById('log-completion-date').value = todayStr;
                 document.getElementById('log-deadline').value = todayStr;
 
                 showLoader("Memeriksa Sesi Pengguna...");
                 fm.onAuthStateChanged(auth, async (user) => {
                     if (user) {
+                        if (isManagerMode) return;
+
                         currentUser = user;
                         document.getElementById('auth-screen').classList.add('hidden');
                         document.getElementById('app-layout').classList.remove('hidden');
-                        document.getElementById('profile-email').value = user.email || 'user@logkerja.pro';                        
+                        document.getElementById('profile-email').value = user.email || '';
                         document.getElementById('display-user-uid').textContent = user.uid;
                         await loadUserProfile(user.uid);
                         setupRealtimeListeners(user.uid);
-                        if (isManagerMode) {
-                            applyManagerRestrictions();
-                        }
                     } else {
+                        if (isManagerMode) return;
                         currentUser = null;
                         isManagerMode = false;
                         document.getElementById('app-layout').classList.add('hidden');
@@ -871,6 +927,17 @@
                 console.warn("Firebase initialization warning:", err);
                 hideLoader();
                 document.getElementById('auth-screen').classList.remove('hidden');
+            }
+        }
+
+        function copyUserUid() {
+            const uidText = document.getElementById('display-user-uid').textContent;
+            if (uidText && uidText !== 'Memuat UID...') {
+                navigator.clipboard.writeText(uidText).then(() => {
+                    alert('UID berhasil disalin ke clipboard!');
+                }).catch(err => {
+                    alert('Gagal menyalin UID: ' + err);
+                });
             }
         }
 
@@ -950,11 +1017,10 @@
 
             showLoader(currentAuthMode === 'login' ? "Masuk ke Akun..." : "Mendaftarkan Akun...");
             try {
+                isManagerMode = false;
                 if (currentAuthMode === 'login') {
-                    isManagerMode = false;
                     await fm.signInWithEmailAndPassword(auth, email, password);
                 } else {
-                    isManagerMode = false;
                     await fm.createUserWithEmailAndPassword(auth, email, password);
                 }
             } catch (error) {
@@ -975,7 +1041,10 @@
             const submitProf = document.getElementById('profile-submit-container');
             if (submitProf) submitProf.style.display = 'none';
 
-            ['profile-name', 'profile-position', 'profile-division', 'profile-gender', 'profile-phone', 'profile-work-address', 'profile-home-address'].forEach(id => {
+            const btnDelAcc = document.getElementById('btn-delete-account');
+            if (btnDelAcc) btnDelAcc.style.display = 'none';
+
+            ['profile-name', 'profile-email', 'profile-new-password', 'profile-current-password', 'profile-position', 'profile-division', 'profile-gender', 'profile-phone', 'profile-work-address', 'profile-home-address'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.disabled = true;
             });
@@ -983,12 +1052,25 @@
 
         async function handleLogout() {
             showLoader("Keluar Akun...");
+            
+            // 1. Reset state dan data lokal agar tidak bentrok dengan sesi berikutnya
+            logsData = [];
+            currentRequirementImages = [];
+            currentTestingImages = [];
+            
+            // 2. Kosongkan tampilan tabel & reset form
+            const tbody = document.getElementById('logs-table-body');
+            if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="py-12 text-center text-slate-400">Memuat ulang...</td></tr>`;
+            
             isManagerMode = false;
             const btnAdd = document.getElementById('btn-add-job');
             if (btnAdd) btnAdd.style.display = 'flex';
             const submitProf = document.getElementById('profile-submit-container');
             if (submitProf) submitProf.style.display = 'flex';
-            ['profile-name', 'profile-position', 'profile-division', 'profile-gender', 'profile-phone', 'profile-work-address', 'profile-home-address'].forEach(id => {
+            const btnDelAcc = document.getElementById('btn-delete-account');
+            if (btnDelAcc) btnDelAcc.style.display = 'flex';
+
+            ['profile-name', 'profile-email', 'profile-new-password', 'profile-current-password', 'profile-position', 'profile-division', 'profile-gender', 'profile-phone', 'profile-work-address', 'profile-home-address'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.disabled = false;
             });
@@ -1000,6 +1082,23 @@
                 hideLoader();
                 document.getElementById('app-layout').classList.add('hidden');
                 document.getElementById('auth-screen').classList.remove('hidden');
+            }
+        }
+
+        async function handleDeleteAccount() {
+            if (!currentUser || isManagerMode) return;
+            const confirmation = confirm("PERHATIAN: Apakah Anda yakin ingin menghapus akun ini beserta seluruh data log kerja secara permanen? Tindakan ini tidak dapat dibatalkan.");
+            if (!confirmation) return;
+
+            showLoader("Menghapus Akun & Data...");
+            const fm = window.firebaseModules;
+            try {
+                await fm.deleteUser(auth.currentUser);
+                hideLoader();
+                alert("Akun berhasil dihapus.");
+            } catch (err) {
+                hideLoader();
+                alert("Gagal menghapus akun. Silakan login ulang dan coba lagi. Pesan: " + err.message);
             }
         }
 
@@ -1061,13 +1160,15 @@
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     document.getElementById('profile-name').value = data.name || 'Mochamad Fuad Asyhary';
-                    document.getElementById('profile-email').value = data.email || (currentUser ? currentUser.email : '') || '';
+                    document.getElementById('profile-email').value = data.email || (auth.currentUser ? auth.currentUser.email : '') || '';
                     document.getElementById('profile-position').value = data.position || 'ABAP & SAP BW Developer';
                     document.getElementById('profile-division').value = data.division || 'IT / EDP';
                     document.getElementById('profile-gender').value = data.gender || 'Laki-laki';
                     document.getElementById('profile-phone').value = data.phone || '';
                     document.getElementById('profile-work-address').value = data.workAddress || 'Hartono Elektronik, Surabaya';
                     document.getElementById('profile-home-address').value = data.homeAddress || 'Kramat Jegu, Taman, Sidoarjo';
+                } else if (auth.currentUser) {
+                    document.getElementById('profile-email').value = auth.currentUser.email || '';
                 }
             } catch (err) {
                 console.warn("Gagal memuat profil:", err);
@@ -1077,40 +1178,58 @@
         async function handleProfileFormSubmit(event) {
             event.preventDefault();
             if (!currentUser || isManagerMode) return;
-            showLoader("Menyimpan Profil...");
-
-            const profileData = {
-                name: document.getElementById('profile-name').value,
-                email: document.getElementById('profile-email').value,
-                position: document.getElementById('profile-position').value,
-                division: document.getElementById('profile-division').value,
-                gender: document.getElementById('profile-gender').value,
-                phone: document.getElementById('profile-phone').value,
-                workAddress: document.getElementById('profile-work-address').value,
-                homeAddress: document.getElementById('profile-home-address').value,
-                updatedAt: new Date().toISOString()
-            };
+            showLoader("Menyimpan Perubahan Profil & Kredensial...");
 
             const fm = window.firebaseModules;
+            const newEmail = document.getElementById('profile-email').value.trim();
+            const newPassword = document.getElementById('profile-new-password').value;
+            const currentPassword = document.getElementById('profile-current-password').value;
+
             try {
+                const userAuth = auth.currentUser;
+
+                // Jika user ingin mengubah Email atau Password, lakukan re-autentikasi jika diperlukan
+                if (userAuth && (newEmail !== userAuth.email || newPassword)) {
+                    if (!currentPassword) {
+                        hideLoader();
+                        alert("Harap masukkan Password Saat Ini di kolom yang tersedia untuk mengonfirmasi perubahan Email atau Password.");
+                        return;
+                    }
+                    const credential = fm.EmailAuthProvider.credential(userAuth.email, currentPassword);
+                    await fm.reauthenticateWithCredential(userAuth, credential);
+
+                    if (newEmail !== userAuth.email) {
+                        await fm.updateEmail(userAuth, newEmail);
+                    }
+                    if (newPassword) {
+                        await fm.updatePassword(userAuth, newPassword);
+                    }
+                }
+
+                const profileData = {
+                    name: document.getElementById('profile-name').value,
+                    email: newEmail,
+                    position: document.getElementById('profile-position').value,
+                    division: document.getElementById('profile-division').value,
+                    gender: document.getElementById('profile-gender').value,
+                    phone: document.getElementById('profile-phone').value,
+                    workAddress: document.getElementById('profile-work-address').value,
+                    homeAddress: document.getElementById('profile-home-address').value,
+                    updatedAt: new Date().toISOString()
+                };
+
                 const docRef = fm.doc(db, 'users', currentUser.uid, 'settings', 'profile');
                 await fm.setDoc(docRef, profileData, { merge: true });
+
+                // Kosongkan form password setelah berhasil
+                document.getElementById('profile-new-password').value = '';
+                document.getElementById('profile-current-password').value = '';
+
                 hideLoader();
-                alert('Profil berhasil diperbarui!');
+                alert('Profil dan kredensial akun berhasil diperbarui!');
             } catch (err) {
                 hideLoader();
-                alert('Gagal menyimpan profil: ' + err.message);
-            }
-        }
-
-        function copyUserUid() {
-            const uidText = document.getElementById('display-user-uid').textContent;
-            if (uidText && uidText !== 'Memuat UID...') {
-                navigator.clipboard.writeText(uidText).then(() => {
-                    alert('UID berhasil disalin ke clipboard!');
-                }).catch(err => {
-                    alert('Gagal menyalin UID: ' + err);
-                });
+                alert('Gagal memperbarui profil/kredensial: ' + err.message);
             }
         }
 
@@ -1357,12 +1476,6 @@
                     let monthStr = dObj.toLocaleString('id-ID', { month: 'short' });
                     let yearNum = dObj.getFullYear();
 
-                    let deadlineFormatted = '-';
-                    if (item.deadline) {
-                        let dlObj = new Date(item.deadline);
-                        deadlineFormatted = `${dlObj.getDate()} ${dlObj.toLocaleString('id-ID', { month: 'short' })} ${dlObj.getFullYear()}`;
-                    }
-
                     let badgeClass = 'bg-slate-100 text-slate-600';
                     let dotClass = 'bg-slate-500';
                     if (item.status === 'Done') { badgeClass = 'bg-emerald-50 text-emerald-700'; dotClass = 'bg-emerald-500'; }
@@ -1375,13 +1488,14 @@
                     else if (item.priority === 'Medium') priorityClass = 'bg-blue-50 text-blue-700 border border-blue-200';
 
                     let prog = item.progress !== undefined ? item.progress : 100;
+                    let progInfo = `${item.date} s.d. ${item.completionDate || '-'}`;
 
                     return `
                         <tr onclick="closeDashboardPopup(); viewDetail('${item.id}')" class="hover:bg-slate-50/80 transition-colors cursor-pointer">
                             <td class="py-3 px-4 font-semibold text-slate-700 whitespace-nowrap">${dayNum} ${monthStr} ${yearNum}</td>
                             <td class="py-3 px-4">
                                 <div class="font-bold text-slate-900">${escapeHtml(item.title)}</div>
-                                <div class="text-[10px] text-slate-400 mt-0.5">${escapeHtml(item.category)}</div>
+                                <div class="text-[10px] text-blue-600 font-mono mt-0.5">${escapeHtml(item.programName || '-')} | ${escapeHtml(item.moduleName || '-')}</div>
                             </td>
                             <td class="py-3 px-4 font-medium text-slate-600">${escapeHtml(item.pic || '-')}</td>
                             <td class="py-3 px-4"><span class="px-2 py-0.5 rounded-lg text-[10px] font-bold ${priorityClass}">${item.priority || 'Medium'}</span></td>
@@ -1394,7 +1508,7 @@
                                 </div>
                             </td>
                             <td class="py-3 px-4"><span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${badgeClass} inline-flex items-center"><span class="w-1.5 h-1.5 rounded-full ${dotClass} mr-1"></span> ${item.status}</span></td>
-                            <td class="py-3 px-4 text-slate-600 whitespace-nowrap">${deadlineFormatted}</td>
+                            <td class="py-3 px-4 text-slate-600 whitespace-nowrap">${progInfo}</td>
                         </tr>
                     `;
                 }).join('');
@@ -1561,7 +1675,7 @@
                             </div>
                             <div>
                                 <h4 class="font-bold text-xs text-slate-800">${escapeHtml(item.title)}</h4>
-                                <p class="text-[11px] text-slate-400 mt-0.5">${escapeHtml(item.description || item.category)}</p>
+                                <p class="text-[11px] text-blue-600 font-mono mt-0.5">${escapeHtml(item.programName || 'Tanpa Program')} (${escapeHtml(item.moduleName || 'Modul -')})</p>
                             </div>
                         </div>
                         <div class="flex items-center space-x-4">
@@ -1596,6 +1710,8 @@
             const filtered = logsData.filter(item => {
                 let matchSearch = !searchKeyword || 
                     (item.title && item.title.toLowerCase().includes(searchKeyword)) ||
+                    (item.programName && item.programName.toLowerCase().includes(searchKeyword)) ||
+                    (item.moduleName && item.moduleName.toLowerCase().includes(searchKeyword)) ||
                     (item.description && item.description.toLowerCase().includes(searchKeyword)) ||
                     (item.pic && item.pic.toLowerCase().includes(searchKeyword));
 
@@ -1630,12 +1746,6 @@
                 let monthStr = dateObj.toLocaleString('id-ID', { month: 'short' });
                 let yearNum = dateObj.getFullYear();
 
-                let deadlineFormatted = '-';
-                if (item.deadline) {
-                    let dObj = new Date(item.deadline);
-                    deadlineFormatted = `${dObj.getDate()} ${dObj.toLocaleString('id-ID', { month: 'short' })} ${dObj.getFullYear()}`;
-                }
-
                 let badgeClass = 'bg-slate-100 text-slate-600';
                 let dotClass = 'bg-slate-500';
                 if (item.status === 'Done') { badgeClass = 'bg-emerald-50 text-emerald-700'; dotClass = 'bg-emerald-500'; }
@@ -1657,7 +1767,7 @@
                         </td>
                         <td class="py-4 px-4">
                             <div class="font-bold text-slate-900">${escapeHtml(item.title)}</div>
-                            <div class="text-[11px] text-slate-400 mt-0.5">${escapeHtml(item.category)}</div>
+                            <div class="text-[11px] text-blue-600 font-mono mt-0.5">${escapeHtml(item.programName || '-')} | Modul: ${escapeHtml(item.moduleName || '-')}</div>
                         </td>
                         <td class="py-4 px-4 font-medium text-slate-600">${escapeHtml(item.pic || '-')}</td>
                         <td class="py-4 px-4">
@@ -1676,7 +1786,10 @@
                                 <span class="w-1.5 h-1.5 rounded-full ${dotClass} mr-1.5"></span> ${item.status}
                             </span>
                         </td>
-                        <td class="py-4 px-4 text-slate-600 whitespace-nowrap">${deadlineFormatted}</td>
+                        <td class="py-4 px-4 text-slate-600 whitespace-nowrap">
+                            <div class="font-medium text-slate-800">Mulai: ${item.date}</div>
+                            <div class="text-[11px] text-emerald-600">Selesai: ${item.completionDate || '-'}</div>
+                        </td>
                         ${!isManagerMode ? `
                             <td class="py-4 px-6 text-right space-x-1.5 whitespace-nowrap" onclick="event.stopPropagation()">
                                 <button onclick="editLog('${item.id}')" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 text-slate-500 transition-colors inline-flex items-center justify-center" title="Edit">
@@ -1698,15 +1811,18 @@
                 return;
             }
             let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "ID,Judul,Kategori,PIC,Tanggal,Deadline,Prioritas,Status,Progress(%),Deskripsi\r\n";
+            csvContent += "ID,Judul,Nama Program,Modul Program,Kategori,PIC,Tanggal Mulai,Tanggal Selesai,Deadline,Prioritas,Status,Progress(%),Deskripsi\r\n";
 
             logsData.forEach(row => {
                 let rowData = [
                     row.id,
                     `"${(row.title || '').replace(/"/g, '""')}"`,
+                    `"${(row.programName || '').replace(/"/g, '""')}"`,
+                    `"${(row.moduleName || '').replace(/"/g, '""')}"`,
                     `"${(row.category || '').replace(/"/g, '""')}"`,
                     `"${(row.pic || '').replace(/"/g, '""')}"`,
                     row.date,
+                    row.completionDate || '',
                     row.deadline,
                     row.priority,
                     row.status,
@@ -1732,15 +1848,18 @@
             }
             let htmlTable = `<table border="1">
                 <tr>
-                    <th>Judul</th><th>Kategori</th><th>PIC</th><th>Tanggal</th><th>Deadline</th><th>Prioritas</th><th>Status</th><th>Progress (%)</th><th>Deskripsi</th>
+                    <th>Judul</th><th>Nama Program</th><th>Modul Program</th><th>Kategori</th><th>PIC</th><th>Tanggal Mulai</th><th>Tanggal Selesai</th><th>Deadline</th><th>Prioritas</th><th>Status</th><th>Progress (%)</th><th>Deskripsi</th>
                 </tr>`;
             
             logsData.forEach(row => {
                 htmlTable += `<tr>
                     <td>${escapeHtml(row.title || '')}</td>
+                    <td>${escapeHtml(row.programName || '')}</td>
+                    <td>${escapeHtml(row.moduleName || '')}</td>
                     <td>${escapeHtml(row.category || '')}</td>
                     <td>${escapeHtml(row.pic || '')}</td>
                     <td>${row.date || ''}</td>
+                    <td>${row.completionDate || ''}</td>
                     <td>${row.deadline || ''}</td>
                     <td>${row.priority || ''}</td>
                     <td>${row.status || ''}</td>
@@ -1769,9 +1888,12 @@
                 if (item) {
                     document.getElementById('log-id').value = item.id;
                     document.getElementById('log-title').value = item.title;
+                    document.getElementById('log-program-name').value = item.programName || '';
+                    document.getElementById('log-module-name').value = item.moduleName || '';
                     document.getElementById('log-category').value = item.category;
                     document.getElementById('log-pic').value = item.pic || '';
                     document.getElementById('log-date').value = item.date;
+                    document.getElementById('log-completion-date').value = item.completionDate || '';
                     document.getElementById('log-deadline').value = item.deadline || item.date;
                     document.getElementById('log-priority').value = item.priority || 'Medium';
                     document.getElementById('log-status').value = item.status;
@@ -1791,6 +1913,7 @@
                 document.getElementById('log-id').value = '';
                 const todayStr = new Date().toISOString().split('T')[0];
                 document.getElementById('log-date').value = todayStr;
+                document.getElementById('log-completion-date').value = todayStr;
                 document.getElementById('log-deadline').value = todayStr;
                 
                 document.getElementById('log-progress').value = 0;
@@ -1812,9 +1935,12 @@
             if (!item) return;
 
             document.getElementById('detail-title').textContent = item.title;
+            document.getElementById('detail-program-name').textContent = item.programName || '-';
+            document.getElementById('detail-module-name').textContent = item.moduleName || '-';
             document.getElementById('detail-category').textContent = item.category;
             document.getElementById('detail-pic').textContent = item.pic || '-';
             document.getElementById('detail-date').textContent = item.date;
+            document.getElementById('detail-completion-date').textContent = item.completionDate || '-';
             document.getElementById('detail-deadline').textContent = item.deadline || '-';
             document.getElementById('detail-progress').textContent = `${item.progress !== undefined ? item.progress : 100}%`;
             document.getElementById('detail-description').textContent = item.description || 'Tidak ada deskripsi.';
@@ -1864,9 +1990,12 @@
             showLoader("Menyimpan Kerjaan ke Firebase...");
             const id = document.getElementById('log-id').value;
             const title = document.getElementById('log-title').value;
+            const programName = document.getElementById('log-program-name').value;
+            const moduleName = document.getElementById('log-module-name').value;
             const category = document.getElementById('log-category').value;
             const pic = document.getElementById('log-pic').value;
             const date = document.getElementById('log-date').value;
+            const completionDate = document.getElementById('log-completion-date').value;
             const deadline = document.getElementById('log-deadline').value;
             const priority = document.getElementById('log-priority').value;
             const status = document.getElementById('log-status').value;
@@ -1875,9 +2004,12 @@
 
             const payload = { 
                 title, 
+                programName,
+                moduleName,
                 category, 
                 pic, 
                 date, 
+                completionDate,
                 deadline, 
                 priority, 
                 status, 
