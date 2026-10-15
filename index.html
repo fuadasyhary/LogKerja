@@ -822,13 +822,13 @@
         </div>
     </div>
 
-    <!-- Image Lightbox Modal -->
-    <div id="lightbox-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden" onclick="closeLightbox()">
-        <div class="relative max-w-4xl max-h-[90vh]">
-            <button onclick="closeLightbox()" class="absolute -top-12 right-0 w-9 h-9 rounded-full bg-white/20 hover:bg-white text-white hover:text-slate-900 flex items-center justify-center transition-all">
-                <i class="fa-solid fa-xmark text-lg"></i>
+    <!-- Image Lightbox Modal (Diperbesar/Dilegalkan Maksimal) -->
+    <div id="lightbox-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-2 sm:p-6 hidden" onclick="closeLightbox()">
+        <div class="relative w-full h-full flex items-center justify-center" onclick="event.stopPropagation()">
+            <button onclick="closeLightbox()" class="absolute top-4 right-4 sm:top-6 sm:right-6 w-11 h-11 rounded-full bg-white/20 hover:bg-white text-white hover:text-slate-900 flex items-center justify-center transition-all z-10 shadow-lg">
+                <i class="fa-solid fa-xmark text-xl"></i>
             </button>
-            <img id="lightbox-img" src="" class="max-w-full max-h-[85vh] rounded-3xl shadow-2xl object-contain mx-auto" onclick="event.stopPropagation()">
+            <img id="lightbox-img" src="" class="max-w-[95vw] max-h-[92vh] w-auto h-auto rounded-2xl shadow-2xl object-contain bg-slate-900/50 p-1">
         </div>
     </div>
 
@@ -1313,17 +1313,13 @@
                 reader.onload = function(event) {
                     const originalBase64 = event.target.result;
                     
-                    // Cek ukuran file asli dalam KB (1 KB = 1024 bytes)
-                    // Panjang string Base64 dikali 0.75 menghasilkan ukuran byte mentah
                     const originalSizeKB = (originalBase64.length * 0.75) / 1024;
 
-                    // Jika ukuran gambar DI BAWAH ATAU SAMA DENGAN 200 KB, gunakan aslinya tanpa kompresi
                     if (originalSizeKB <= 200) {
                         resolve(originalBase64);
                         return;
                     }
 
-                    // Jika DI ATAS 200 KB, lakukan kompresi otomatis
                     const img = new Image();
                     img.src = originalBase64;
                     img.onload = function() {
@@ -1348,7 +1344,6 @@
                         let quality = 0.7;
                         let compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
 
-                        // Iterasi turunkan kualitas hingga ukurannya aman di bawah 200 KB
                         while (((compressedDataUrl.length * 0.75) / 1024) > 200 && quality > 0.1) {
                             quality -= 0.1;
                             compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
