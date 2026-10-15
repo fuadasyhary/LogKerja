@@ -1306,19 +1306,32 @@
             if (yearsSet.has(currentTableVal)) tableYearSelect.value = currentTableVal;
         }
 
-        async function compressImage(file, maxSizeKB = 100) {
+        async function processAndCompressImage(file) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
                 reader.onload = function(event) {
+                    const originalBase64 = event.target.result;
+                    
+                    // Cek ukuran file asli dalam KB (1 KB = 1024 bytes)
+                    // Panjang string Base64 dikali 0.75 menghasilkan ukuran byte mentah
+                    const originalSizeKB = (originalBase64.length * 0.75) / 1024;
+
+                    // Jika ukuran gambar DI BAWAH ATAU SAMA DENGAN 200 KB, gunakan aslinya tanpa kompresi
+                    if (originalSizeKB <= 200) {
+                        resolve(originalBase64);
+                        return;
+                    }
+
+                    // Jika DI ATAS 200 KB, lakukan kompresi otomatis
                     const img = new Image();
-                    img.src = event.target.result;
+                    img.src = originalBase64;
                     img.onload = function() {
                         const canvas = document.createElement('canvas');
                         let width = img.width;
                         let height = img.height;
                         
-                        const maxDimension = 700;
+                        const maxDimension = 900;
                         if (width > height && width > maxDimension) {
                             height = Math.round((height * maxDimension) / width);
                             width = maxDimension;
@@ -1332,14 +1345,16 @@
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
 
-                        let quality = 0.6;
-                        let dataUrl = canvas.toDataURL('image/jpeg', quality);
+                        let quality = 0.7;
+                        let compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
 
-                        while (dataUrl.length > maxSizeKB * 1024 * 1.37 && quality > 0.1) {
+                        // Iterasi turunkan kualitas hingga ukurannya aman di bawah 200 KB
+                        while (((compressedDataUrl.length * 0.75) / 1024) > 200 && quality > 0.1) {
                             quality -= 0.1;
-                            dataUrl = canvas.toDataURL('image/jpeg', quality);
+                            compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
                         }
-                        resolve(dataUrl);
+
+                        resolve(compressedDataUrl);
                     };
                 };
             });
@@ -1347,14 +1362,14 @@
 
         async function handleImageUpload(type) {
             if (isManagerMode) return;
-            showLoader("Mengompres & Mengunggah Gambar...");
+            showLoader("Mengecek & Mengompres Gambar (>200KB)...");
             const inputId = type === 'requirement' ? 'req-file-input' : 'test-file-input';
             const files = document.getElementById(inputId).files;
             let targetArray = type === 'requirement' ? currentRequirementImages : currentTestingImages;
             
             for (let i = 0; i < files.length; i++) {
-                const compressedBase64 = await compressImage(files[i], 90);
-                targetArray.push(compressedBase64);
+                const processedBase64 = await processAndCompressImage(files[i]);
+                targetArray.push(processedBase64);
             }
             renderImagePreviews(type);
             document.getElementById(inputId).value = '';
@@ -1869,7 +1884,7 @@
                 return;
             }
 
-            showLoader("Menyiapkan Berkas Excel & Gambar...");
+            showLoader("Menyiapkan Berkas Excel & Tautan Gambar...");
 
             setTimeout(() => {
                 let htmlTable = `<table border="1">
@@ -1885,13 +1900,13 @@
                         <th>Status</th>
                         <th>Progress (%)</th>
                         <th>Deskripsi</th>
-                        <th>Gambar Requirement</th>
-                        <th>Gambar Testing</th>
+                        <th>Link Gambar Requirement</th>
+                        <th>Link Gambar Testing</th>
                     </tr>`;
                 
                 logsData.forEach(row => {
-                    let reqImagesHtml = (row.requirements || []).map(img => `<img src="${img}" width="80" height="80" style="object-fit:cover; margin:2px;" />`).join('');
-                    let testImagesHtml = (row.testing || []).map(img => `<img src="${img}" width="80" height="80" style="object-fit:cover; margin:2px;" />`).join('');
+                    let reqLinks = (row.requirements || []).map((img, idx) => `<a href="${img}" target="_blank">Lihat Req #${idx + 1}</a>`).join(' | ');
+                    let testLinks = (row.testing || []).map((img, idx) => `<a href="${img}" target="_blank">Lihat Test #${idx + 1}</a>`).join(' | ');
 
                     htmlTable += `<tr>
                         <td>${escapeHtml(row.title || '')}</td>
@@ -1905,8 +1920,8 @@
                         <td>${row.status || ''}</td>
                         <td>${row.progress || ''}</td>
                         <td>${escapeHtml(row.description || '')}</td>
-                        <td>${reqImagesHtml || '-'}</td>
-                        <td>${testImagesHtml || '-'}</td>
+                        <td>${reqLinks || '-'}</td>
+                        <td>${testLinks || '-'}</td>
                     </tr>`;
                 });
                 htmlTable += `</table>`;
