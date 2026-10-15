@@ -69,14 +69,12 @@
             </div>
             
             <div class="p-6">
-                <!-- 3 Tabs Auth: Masuk, Daftar, Tamu -->
                 <div class="flex bg-slate-100 p-1 rounded-2xl mb-6">
                     <button id="tab-login" onclick="switchAuthTab('login')" class="flex-1 py-2 text-[11px] font-bold rounded-xl bg-white text-blue-600 shadow-sm transition-all">Masuk</button>
                     <button id="tab-register" onclick="switchAuthTab('register')" class="flex-1 py-2 text-[11px] font-bold rounded-xl text-slate-500 hover:text-slate-800 transition-all">Daftar</button>
                     <button id="tab-guest" onclick="switchAuthTab('guest')" class="flex-1 py-2 text-[11px] font-bold rounded-xl text-slate-500 hover:text-slate-800 transition-all">Tamu</button>
                 </div>
 
-                <!-- Form Login / Register -->
                 <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4">
                     <div id="email-field-wrapper">
                         <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Email</label>
@@ -93,7 +91,6 @@
                         </div>
                     </div>
 
-                    <!-- Guest Input Wrapper (Hidden by default) -->
                     <div id="guest-wrapper" class="space-y-2 hidden">
                         <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">ID User / UID yang Ingin Dilihat</label>
                         <div class="relative">
@@ -118,11 +115,9 @@
 
     <!-- Main Application Layout -->
     <div id="app-layout" class="flex-1 flex flex-col hidden">
-        <!-- Top Navigation -->
         <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                 <div class="flex items-center space-x-6">
-                    <!-- LOG Logo / Dropdown Button for Mobile -->
                     <div class="relative">
                         <button onclick="toggleMobileDropdown()" class="flex items-center space-x-3 focus:outline-none group">
                             <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-blue-200 font-black text-sm group-hover:bg-blue-700 transition-colors">
@@ -133,7 +128,6 @@
                             </span>
                         </button>
 
-                        <!-- Mobile Dropdown Menu -->
                         <div id="mobile-dropdown-menu" class="absolute left-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 hidden md:hidden z-50 animate-in fade-in zoom-in-95 duration-150">
                             <button onclick="switchView('dashboard'); toggleMobileDropdown();" class="w-full px-4 py-2.5 text-left text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-600 flex items-center space-x-2.5">
                                 <i class="fa-solid fa-chart-pie w-4 text-center"></i><span>Dashboard</span>
@@ -147,7 +141,6 @@
                         </div>
                     </div>
 
-                    <!-- Desktop Nav Links -->
                     <nav class="hidden md:flex items-center space-x-1">
                         <button id="nav-dashboard" onclick="switchView('dashboard')" class="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold flex items-center space-x-2 transition-all">
                             <i class="fa-solid fa-chart-pie text-xs"></i>
@@ -178,14 +171,15 @@
 
         <!-- ================= VIEW 1: DASHBOARD ================= -->
         <div id="view-dashboard" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm">
                 <div>
-                    <h2 class="text-xs sm:text-sm font-medium text-slate-500">Pantau jumlah kerjaan, status penyelesaian, dan tenggat waktu Anda per tahun dan bulan. (Klik kartu untuk melihat rincian data)</h2>
+                    <h2 id="dashboard-greeting" class="text-sm sm:text-base font-extrabold text-slate-900">Halo, Memuat...</h2>
+                    <p class="text-xs text-slate-500 mt-1">Pantau jumlah kerjaan, status penyelesaian, dan tenggat waktu Anda per tahun dan bulan. <span class="italic text-blue-600 font-medium">(Klik kartu untuk melihat rincian data)</span></p>
                 </div>
                 <div class="flex items-center space-x-3">
-                    <select id="filter-year" onchange="renderDashboardData()" class="px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select id="filter-year" onchange="renderDashboardData()" class="px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </select>
-                    <select id="filter-month" onchange="renderDashboardData()" class="px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select id="filter-month" onchange="renderDashboardData()" class="px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Semua Bulan</option>
                         <option value="01">Januari</option>
                         <option value="02">Februari</option>
@@ -301,7 +295,7 @@
             <!-- Bottom Section -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
-                    <h3 class="font-bold text-slate-900 text-sm mb-4">Kerjaan per Kategori</h3>
+                    <h3 class="font-bold text-slate-900 text-sm mb-4">Kerjaan per Modul</h3>
                     <div class="h-64 relative">
                         <canvas id="categoryChart"></canvas>
                     </div>
@@ -383,15 +377,21 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Kategori</label>
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Modul</label>
                         <select id="table-filter-category" onchange="renderLogsTable()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="">Semua Kategori</option>
-                            <option value="SAP BW">SAP BW</option>
-                            <option value="Pengembangan">Pengembangan</option>
-                            <option value="Desain">Desain</option>
-                            <option value="Rapat / Koordinasi">Rapat / Koordinasi</option>
-                            <option value="Laporan / Administrasi">Laporan / Administrasi</option>
-                            <option value="Lainnya">Lainnya</option>
+                            <option value="">Semua Modul</option>
+                            <option value="FICO SAP">FICO SAP</option>
+                            <option value="MM SAP">MM SAP</option>
+                            <option value="SD SAP">SD SAP</option>
+                            <option value="PP SAP">PP SAP</option>
+                            <option value="BW SAP">BW SAP</option>
+                            <option value="BMS">BMS</option>
+                            <option value="AMS">AMS</option>
+                            <option value="FMS">FMS</option>
+                            <option value="GAMS">GAMS</option>
+                            <option value="HRMS">HRMS</option>
+                            <option value="HLS">HLS</option>
+                            <option value="RSS">RSS</option>
                         </select>
                     </div>
                     <div>
@@ -441,7 +441,6 @@
             </div>
 
             <div class="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-6">
-                <!-- User UID Display Box -->
                 <div class="p-4 bg-blue-50/60 rounded-2xl border border-blue-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                         <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 block mb-1"><i class="fa-solid fa-id-badge mr-1"></i> User ID / UID Akun</span>
@@ -465,7 +464,6 @@
                         </div>
                     </div>
 
-                    <!-- Bagian Ubah Password -->
                     <div class="p-5 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-4">
                         <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center">
                             <i class="fa-solid fa-key text-blue-600 mr-2"></i> Ubah Password (Opsional)
@@ -570,7 +568,20 @@
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Modul Program</label>
-                        <input type="text" id="log-module-name" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" placeholder="Misal: FI / CO / MM / SD / BW">
+                        <select id="log-module-name" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all">
+                            <option value="FICO SAP">FICO SAP</option>
+                            <option value="MM SAP">MM SAP</option>
+                            <option value="SD SAP">SD SAP</option>
+                            <option value="PP SAP">PP SAP</option>
+                            <option value="BW SAP">BW SAP</option>
+                            <option value="BMS">BMS</option>
+                            <option value="AMS">AMS</option>
+                            <option value="FMS">FMS</option>
+                            <option value="GAMS">GAMS</option>
+                            <option value="HRMS">HRMS</option>
+                            <option value="HLS">HLS</option>
+                            <option value="RSS">RSS</option>
+                        </select>
                     </div>
                 </div>
 
@@ -629,7 +640,6 @@
                     </div>
                 </div>
 
-                <!-- Progress Slider Styling -->
                 <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-2">
                     <div class="flex justify-between items-center text-xs font-bold uppercase tracking-wider text-blue-600">
                         <span id="progress-label-text">PROGRESS — 0%</span>
@@ -642,7 +652,6 @@
                     <textarea id="log-description" rows="3" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" placeholder="Uraikan detail pekerjaan..."></textarea>
                 </div>
 
-                <!-- Requirement Images Upload -->
                 <div class="border-t border-slate-100 pt-4">
                     <div class="flex items-center justify-between mb-2">
                         <label class="text-xs font-bold uppercase tracking-wider text-blue-600">
@@ -654,7 +663,6 @@
                     <div id="req-preview-container" class="flex flex-wrap gap-2 mt-3"></div>
                 </div>
 
-                <!-- Testing Images Upload -->
                 <div class="border-t border-slate-100 pt-4">
                     <div class="flex items-center justify-between mb-2">
                         <label class="text-xs font-bold uppercase tracking-wider text-emerald-600">
@@ -824,7 +832,6 @@
         </div>
     </div>
 
-    <!-- Script Utama Dashboard & Firebase Integration -->
     <script>
         let auth, db, analytics, currentUser = null;
         let logsData = [];
@@ -836,6 +843,7 @@
 
         let currentRequirementImages = [];
         let currentTestingImages = [];
+        let userDisplayName = "User";
 
         window.addEventListener('DOMContentLoaded', () => {
             setTimeout(initFirebaseApp, 300);
@@ -1052,13 +1060,11 @@
 
         async function handleLogout() {
             showLoader("Keluar Akun...");
-            
-            // 1. Reset state dan data lokal agar tidak bentrok dengan sesi berikutnya
             logsData = [];
             currentRequirementImages = [];
             currentTestingImages = [];
+            userDisplayName = "User";
             
-            // 2. Kosongkan tampilan tabel & reset form
             const tbody = document.getElementById('logs-table-body');
             if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="py-12 text-center text-slate-400">Memuat ulang...</td></tr>`;
             
@@ -1159,6 +1165,7 @@
                 const docSnap = await fm.getDoc(docRef);
                 if (docSnap.exists()) {
                     const data = docSnap.data();
+                    userDisplayName = data.name || 'User';
                     document.getElementById('profile-name').value = data.name || 'Mochamad Fuad Asyhary';
                     document.getElementById('profile-email').value = data.email || (auth.currentUser ? auth.currentUser.email : '') || '';
                     document.getElementById('profile-position').value = data.position || 'ABAP & SAP BW Developer';
@@ -1167,11 +1174,26 @@
                     document.getElementById('profile-phone').value = data.phone || '';
                     document.getElementById('profile-work-address').value = data.workAddress || 'Hartono Elektronik, Surabaya';
                     document.getElementById('profile-home-address').value = data.homeAddress || 'Kramat Jegu, Taman, Sidoarjo';
-                } else if (auth.currentUser) {
-                    document.getElementById('profile-email').value = auth.currentUser.email || '';
+                } else {
+                    userDisplayName = isManagerMode ? "Tamu" : "User";
+                    if (auth.currentUser) {
+                        document.getElementById('profile-email').value = auth.currentUser.email || '';
+                    }
                 }
+                updateGreetingHeader();
             } catch (err) {
                 console.warn("Gagal memuat profil:", err);
+            }
+        }
+
+        function updateGreetingHeader() {
+            const greetingEl = document.getElementById('dashboard-greeting');
+            if (greetingEl) {
+                if (isManagerMode) {
+                    greetingEl.textContent = "Hai, Tamu";
+                } else {
+                    greetingEl.textContent = `Hai, ${userDisplayName}`;
+                }
             }
         }
 
@@ -1188,7 +1210,6 @@
             try {
                 const userAuth = auth.currentUser;
 
-                // Jika user ingin mengubah Email atau Password, lakukan re-autentikasi jika diperlukan
                 if (userAuth && (newEmail !== userAuth.email || newPassword)) {
                     if (!currentPassword) {
                         hideLoader();
@@ -1221,7 +1242,9 @@
                 const docRef = fm.doc(db, 'users', currentUser.uid, 'settings', 'profile');
                 await fm.setDoc(docRef, profileData, { merge: true });
 
-                // Kosongkan form password setelah berhasil
+                userDisplayName = profileData.name;
+                updateGreetingHeader();
+
                 document.getElementById('profile-new-password').value = '';
                 document.getElementById('profile-current-password').value = '';
 
@@ -1283,7 +1306,7 @@
             if (yearsSet.has(currentTableVal)) tableYearSelect.value = currentTableVal;
         }
 
-        async function compressImage(file, maxSizeMB = 1) {
+        async function compressImage(file, maxSizeKB = 100) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
@@ -1295,7 +1318,7 @@
                         let width = img.width;
                         let height = img.height;
                         
-                        const maxDimension = 1200;
+                        const maxDimension = 700;
                         if (width > height && width > maxDimension) {
                             height = Math.round((height * maxDimension) / width);
                             width = maxDimension;
@@ -1309,10 +1332,10 @@
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
 
-                        let quality = 0.9;
+                        let quality = 0.6;
                         let dataUrl = canvas.toDataURL('image/jpeg', quality);
 
-                        while (dataUrl.length > maxSizeMB * 1024 * 1024 * 1.37 && quality > 0.1) {
+                        while (dataUrl.length > maxSizeKB * 1024 * 1.37 && quality > 0.1) {
                             quality -= 0.1;
                             dataUrl = canvas.toDataURL('image/jpeg', quality);
                         }
@@ -1330,7 +1353,7 @@
             let targetArray = type === 'requirement' ? currentRequirementImages : currentTestingImages;
             
             for (let i = 0; i < files.length; i++) {
-                const compressedBase64 = await compressImage(files[i], 1);
+                const compressedBase64 = await compressImage(files[i], 90);
                 targetArray.push(compressedBase64);
             }
             renderImagePreviews(type);
@@ -1495,7 +1518,7 @@
                             <td class="py-3 px-4 font-semibold text-slate-700 whitespace-nowrap">${dayNum} ${monthStr} ${yearNum}</td>
                             <td class="py-3 px-4">
                                 <div class="font-bold text-slate-900">${escapeHtml(item.title)}</div>
-                                <div class="text-[10px] text-blue-600 font-mono mt-0.5">${escapeHtml(item.programName || '-')} | ${escapeHtml(item.moduleName || '-')}</div>
+                                <div class="text-[10px] text-blue-600 font-mono mt-0.5">${escapeHtml(item.programName || '-')} | ${escapeHtml(item.category || '-')}</div>
                             </td>
                             <td class="py-3 px-4 font-medium text-slate-600">${escapeHtml(item.pic || '-')}</td>
                             <td class="py-3 px-4"><span class="px-2 py-0.5 rounded-lg text-[10px] font-bold ${priorityClass}">${item.priority || 'Medium'}</span></td>
@@ -1675,7 +1698,7 @@
                             </div>
                             <div>
                                 <h4 class="font-bold text-xs text-slate-800">${escapeHtml(item.title)}</h4>
-                                <p class="text-[11px] text-blue-600 font-mono mt-0.5">${escapeHtml(item.programName || 'Tanpa Program')} (${escapeHtml(item.moduleName || 'Modul -')})</p>
+                                <p class="text-[11px] text-blue-600 font-mono mt-0.5">${escapeHtml(item.programName || 'Tanpa Program')} (${escapeHtml(item.category || 'Modul -')})</p>
                             </div>
                         </div>
                         <div class="flex items-center space-x-4">
@@ -1711,7 +1734,7 @@
                 let matchSearch = !searchKeyword || 
                     (item.title && item.title.toLowerCase().includes(searchKeyword)) ||
                     (item.programName && item.programName.toLowerCase().includes(searchKeyword)) ||
-                    (item.moduleName && item.moduleName.toLowerCase().includes(searchKeyword)) ||
+                    (item.category && item.category.toLowerCase().includes(searchKeyword)) ||
                     (item.description && item.description.toLowerCase().includes(searchKeyword)) ||
                     (item.pic && item.pic.toLowerCase().includes(searchKeyword));
 
@@ -1767,7 +1790,7 @@
                         </td>
                         <td class="py-4 px-4">
                             <div class="font-bold text-slate-900">${escapeHtml(item.title)}</div>
-                            <div class="text-[11px] text-blue-600 font-mono mt-0.5">${escapeHtml(item.programName || '-')} | Modul: ${escapeHtml(item.moduleName || '-')}</div>
+                            <div class="text-[11px] text-blue-600 font-mono mt-0.5">${escapeHtml(item.programName || '-')} | Modul: ${escapeHtml(item.category || '-')}</div>
                         </td>
                         <td class="py-4 px-4 font-medium text-slate-600">${escapeHtml(item.pic || '-')}</td>
                         <td class="py-4 px-4">
@@ -1811,14 +1834,13 @@
                 return;
             }
             let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "ID,Judul,Nama Program,Modul Program,Kategori,PIC,Tanggal Mulai,Tanggal Selesai,Deadline,Prioritas,Status,Progress(%),Deskripsi\r\n";
+            csvContent += "ID,Judul,Nama Program,Modul,PIC,Tanggal Mulai,Tanggal Selesai,Deadline,Prioritas,Status,Progress(%),Deskripsi\r\n";
 
             logsData.forEach(row => {
                 let rowData = [
                     row.id,
                     `"${(row.title || '').replace(/"/g, '""')}"`,
                     `"${(row.programName || '').replace(/"/g, '""')}"`,
-                    `"${(row.moduleName || '').replace(/"/g, '""')}"`,
                     `"${(row.category || '').replace(/"/g, '""')}"`,
                     `"${(row.pic || '').replace(/"/g, '""')}"`,
                     row.date,
@@ -1846,37 +1868,59 @@
                 alert('Tidak ada data di Firebase untuk diexport.');
                 return;
             }
-            let htmlTable = `<table border="1">
-                <tr>
-                    <th>Judul</th><th>Nama Program</th><th>Modul Program</th><th>Kategori</th><th>PIC</th><th>Tanggal Mulai</th><th>Tanggal Selesai</th><th>Deadline</th><th>Prioritas</th><th>Status</th><th>Progress (%)</th><th>Deskripsi</th>
-                </tr>`;
-            
-            logsData.forEach(row => {
-                htmlTable += `<tr>
-                    <td>${escapeHtml(row.title || '')}</td>
-                    <td>${escapeHtml(row.programName || '')}</td>
-                    <td>${escapeHtml(row.moduleName || '')}</td>
-                    <td>${escapeHtml(row.category || '')}</td>
-                    <td>${escapeHtml(row.pic || '')}</td>
-                    <td>${row.date || ''}</td>
-                    <td>${row.completionDate || ''}</td>
-                    <td>${row.deadline || ''}</td>
-                    <td>${row.priority || ''}</td>
-                    <td>${row.status || ''}</td>
-                    <td>${row.progress || ''}</td>
-                    <td>${escapeHtml(row.description || '')}</td>
-                </tr>`;
-            });
-            htmlTable += `</table>`;
 
-            const blob = new Blob([htmlTable], { type: 'application/vnd.ms-excel' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `LogKerjaPro_Export_${new Date().toISOString().split('T')[0]}.xls`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            showLoader("Menyiapkan Berkas Excel & Gambar...");
+
+            setTimeout(() => {
+                let htmlTable = `<table border="1">
+                    <tr>
+                        <th>Judul</th>
+                        <th>Nama Program</th>
+                        <th>Modul</th>
+                        <th>PIC</th>
+                        <th>Tanggal Mulai</th>
+                        <th>Tanggal Selesai</th>
+                        <th>Deadline</th>
+                        <th>Prioritas</th>
+                        <th>Status</th>
+                        <th>Progress (%)</th>
+                        <th>Deskripsi</th>
+                        <th>Gambar Requirement</th>
+                        <th>Gambar Testing</th>
+                    </tr>`;
+                
+                logsData.forEach(row => {
+                    let reqImagesHtml = (row.requirements || []).map(img => `<img src="${img}" width="80" height="80" style="object-fit:cover; margin:2px;" />`).join('');
+                    let testImagesHtml = (row.testing || []).map(img => `<img src="${img}" width="80" height="80" style="object-fit:cover; margin:2px;" />`).join('');
+
+                    htmlTable += `<tr>
+                        <td>${escapeHtml(row.title || '')}</td>
+                        <td>${escapeHtml(row.programName || '')}</td>
+                        <td>${escapeHtml(row.category || '')}</td>
+                        <td>${escapeHtml(row.pic || '')}</td>
+                        <td>${row.date || ''}</td>
+                        <td>${row.completionDate || ''}</td>
+                        <td>${row.deadline || ''}</td>
+                        <td>${row.priority || ''}</td>
+                        <td>${row.status || ''}</td>
+                        <td>${row.progress || ''}</td>
+                        <td>${escapeHtml(row.description || '')}</td>
+                        <td>${reqImagesHtml || '-'}</td>
+                        <td>${testImagesHtml || '-'}</td>
+                    </tr>`;
+                });
+                htmlTable += `</table>`;
+
+                const blob = new Blob([htmlTable], { type: 'application/vnd.ms-excel' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `LogKerjaPro_Export_Lengkap_${new Date().toISOString().split('T')[0]}.xls`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                hideLoader();
+            }, 500);
         }
 
         function openLogModal(id = null) {
@@ -1889,8 +1933,7 @@
                     document.getElementById('log-id').value = item.id;
                     document.getElementById('log-title').value = item.title;
                     document.getElementById('log-program-name').value = item.programName || '';
-                    document.getElementById('log-module-name').value = item.moduleName || '';
-                    document.getElementById('log-category').value = item.category;
+                    document.getElementById('log-category').value = item.category || 'FICO SAP';
                     document.getElementById('log-pic').value = item.pic || '';
                     document.getElementById('log-date').value = item.date;
                     document.getElementById('log-completion-date').value = item.completionDate || '';
@@ -1936,8 +1979,8 @@
 
             document.getElementById('detail-title').textContent = item.title;
             document.getElementById('detail-program-name').textContent = item.programName || '-';
-            document.getElementById('detail-module-name').textContent = item.moduleName || '-';
-            document.getElementById('detail-category').textContent = item.category;
+            document.getElementById('detail-module-name').textContent = item.category || '-';
+            document.getElementById('detail-category').textContent = item.category || '-';
             document.getElementById('detail-pic').textContent = item.pic || '-';
             document.getElementById('detail-date').textContent = item.date;
             document.getElementById('detail-completion-date').textContent = item.completionDate || '-';
@@ -1987,11 +2030,12 @@
         async function handleLogFormSubmit(event) {
             event.preventDefault();
             if (isManagerMode) return;
-            showLoader("Menyimpan Kerjaan ke Firebase...");
+            
+            showLoader("Menyimpan & Mengunggah Data Kerjaan...");
+            
             const id = document.getElementById('log-id').value;
             const title = document.getElementById('log-title').value;
             const programName = document.getElementById('log-program-name').value;
-            const moduleName = document.getElementById('log-module-name').value;
             const category = document.getElementById('log-category').value;
             const pic = document.getElementById('log-pic').value;
             const date = document.getElementById('log-date').value;
@@ -2005,7 +2049,6 @@
             const payload = { 
                 title, 
                 programName,
-                moduleName,
                 category, 
                 pic, 
                 date, 
@@ -2025,11 +2068,14 @@
             try {
                 if (!currentUser) throw new Error("No active user");
                 const colRef = fm.collection(db, 'users', currentUser.uid, 'work_logs');
+                
                 if (id) {
                     await fm.updateDoc(fm.doc(db, 'users', currentUser.uid, 'work_logs', id), payload);
                 } else {
                     await fm.addDoc(colRef, payload);
                 }
+                
+                hideLoader();
                 closeLogModal();
             } catch (err) {
                 hideLoader();
@@ -2050,6 +2096,7 @@
             try {
                 if (!currentUser) throw new Error("No active user");
                 await fm.deleteDoc(fm.doc(db, 'users', currentUser.uid, 'work_logs', id));
+                hideLoader();
             } catch (err) {
                 hideLoader();
                 alert('Gagal menghapus data: ' + err.message);
