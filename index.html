@@ -93,16 +93,14 @@
                         </div>
                     </div>
 
-                    <!-- Guest Selection Wrapper (Hidden by default) -->
+                    <!-- Guest Input Wrapper (Hidden by default) -->
                     <div id="guest-wrapper" class="space-y-2 hidden">
-                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Pilih User / Tamu</label>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">ID User / UID yang Ingin Dilihat</label>
                         <div class="relative">
-                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400"><i class="fa-solid fa-users text-xs"></i></span>
-                            <select id="guest-user-select" class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all">
-                                <option value="">Memuat daftar user...</option>
-                            </select>
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400"><i class="fa-solid fa-user-shield text-xs"></i></span>
+                            <input type="text" id="guest-uid-input" class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" placeholder="Masukkan User UID...">
                         </div>
-                        <p class="text-[10px] text-slate-400 mt-1 italic">*Masuk sebagai tamu untuk melihat data tanpa izin ubah/hapus.</p>
+                        <p class="text-[10px] text-slate-400 mt-1 italic">*Masukkan UID Firebase user pemilik data untuk meninjau secara read-only.</p>
                     </div>
 
                     <div id="auth-error" class="text-rose-500 text-xs font-medium hidden"></div>
@@ -864,7 +862,7 @@
             }
         }
 
-        async function switchAuthTab(mode) {
+        function switchAuthTab(mode) {
             currentAuthMode = mode;
             const loginBtn = document.getElementById('tab-login');
             const registerBtn = document.getElementById('tab-register');
@@ -897,35 +895,6 @@
                 passwordWrapper.style.display = 'none';
                 guestWrapper.style.display = 'block';
                 submitBtn.textContent = "Masuk sebagai Tamu";
-                await loadRegisteredUsersForGuest();
-            }
-        }
-
-        async function loadRegisteredUsersForGuest() {
-            const selectEl = document.getElementById('guest-user-select');
-            selectEl.innerHTML = `<option value="">Memuat daftar user...</option>`;
-            const fm = window.firebaseModules;
-            try {
-                const q = fm.query(fm.collection(db, 'users'));
-                const querySnapshot = await fm.getDocs(q);
-                
-                let options = `<option value="">-- Pilih User Terdaftar --</option>`;
-                for (const dSnap of querySnapshot.docs) {
-                    const uid = dSnap.id;
-                    const profDoc = await fm.getDoc(fm.doc(db, 'users', uid, 'settings', 'profile'));
-                    let name = uid;
-                    let email = '';
-                    if (profDoc.exists()) {
-                        const data = profDoc.data();
-                        name = data.name || data.email || uid;
-                        email = data.email ? ` (${data.email})` : '';
-                    }
-                    options += `<option value="${uid}">${name}${email}</option>`;
-                }
-                selectEl.innerHTML = options;
-            } catch (e) {
-                console.warn("Gagal memuat user tamu:", e);
-                selectEl.innerHTML = `<option value="">Gagal memuat daftar user</option>`;
             }
         }
 
@@ -936,9 +905,9 @@
             const fm = window.firebaseModules;
 
             if (currentAuthMode === 'guest') {
-                const targetUid = document.getElementById('guest-user-select').value;
+                const targetUid = document.getElementById('guest-uid-input').value.trim();
                 if (!targetUid) {
-                    errEl.textContent = "Silakan pilih salah satu user terlebih dahulu.";
+                    errEl.textContent = "Silakan masukkan ID User / UID terlebih dahulu.";
                     errEl.classList.remove('hidden');
                     return;
                 }
