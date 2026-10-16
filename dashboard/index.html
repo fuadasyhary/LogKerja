@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard &bull; LogKerja Pro</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%236366f1'/><text x='50%' y='53%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='900' font-size='42' fill='%23ffffff'>LOG</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-[#f8fafc] text-slate-800 font-sans antialiased min-h-screen flex flex-col pb-20 md:pb-0">
+
+    <!-- Global Loader -->
+    <div id="global-loader" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex flex-col items-center justify-center hidden">
+        <div class="bg-white p-6 rounded-3xl shadow-2xl flex flex-col items-center space-y-4 max-w-xs w-full mx-4 border border-slate-100 animate-pulse">
+            <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <div class="text-center">
+                <h4 id="loader-text" class="font-bold text-sm text-slate-800">Memproses Data...</h4>
+                <p class="text-[11px] text-slate-400 mt-0.5">Mohon tunggu sebentar</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK Imports -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, getDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
+
+        window.firebaseModules = {
+            initializeApp, getAuth, onAuthStateChanged, signOut,
+            getFirestore, collection, doc, getDoc, onSnapshot, query, getAnalytics
+        };
+    </script>
+
+    <!-- Header Navigation -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-6">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-blue-200 font-black text-sm">
+                        LOG
+                    </div>
+                    <span class="font-bold text-base tracking-tight text-slate-900">Kerja</span>
+                </div>
+
+                <nav class="hidden md:flex items-center space-x-1">
+                    <button onclick="location.href='index.html'" class="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold flex items-center space-x-2 transition-all">
+                        <i class="fa-solid fa-chart-pie text-xs"></i><span>Dashboard</span>
+                    </button>
+                    <button onclick="location.href='../kerjaan/index.html'" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all">
+                        <i class="fa-solid fa-list-check text-xs"></i><span>Daftar Kerjaan</span>
+                    </button>
+                    <button onclick="location.href='../profil/index.html'" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all">
+                        <i class="fa-solid fa-user text-xs"></i><span>Profil User</span>
+                    </button>
+                </nav>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <button onclick="handleLogout()" class="w-9 h-9 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-600 rounded-xl flex items-center justify-center text-xs transition-all" title="Keluar">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dashboard Content -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm">
+            <div>
+                <h2 id="dashboard-greeting" class="text-sm sm:text-base font-extrabold text-slate-900">Halo, Memuat...</h2>
+                <p class="text-xs text-slate-500 mt-1">Pantau jumlah kerjaan, status penyelesaian, dan tenggat waktu Anda per tahun dan bulan. <span class="italic text-blue-600 font-medium">(Klik kartu untuk melihat rincian data)</span></p>
+            </div>
+            <div class="flex items-center space-x-3">
+                <select id="filter-year" onchange="renderDashboardData()" class="px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
+                <select id="filter-month" onchange="renderDashboardData()" class="px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Semua Bulan</option>
+                    <option value="01">Januari</option><option value="02">Februari</option><option value="03">Maret</option><option value="04">April</option>
+                    <option value="05">Mei</option><option value="06">Juni</option><option value="07">Juli</option><option value="08">Agustus</option>
+                    <option value="09">September</option><option value="10">Oktober</option><option value="11">November</option><option value="12">Desember</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Metric Cards Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div onclick="showDashboardPopup('total')" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between cursor-pointer hover:border-blue-400 hover:shadow-md transition-all group">
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-blue-600 transition-colors">Total Kerjaan</span>
+                    <i class="fa-solid fa-layer-group text-slate-400 text-sm group-hover:text-blue-600"></i>
+                </div>
+                <div class="mt-4">
+                    <h3 id="stat-total-jobs" class="text-3xl font-extrabold text-slate-800">0</h3>
+                    <p id="stat-unstarted" class="text-xs text-slate-400 mt-1">0 belum dimulai</p>
+                </div>
+            </div>
+
+            <div onclick="showDashboardPopup('done')" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between cursor-pointer hover:border-emerald-400 hover:shadow-md transition-all group">
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-emerald-600 transition-colors">Selesai</span>
+                    <i class="fa-solid fa-circle-check text-emerald-500 text-sm"></i>
+                </div>
+                <div class="mt-4">
+                    <h3 id="stat-completed-jobs" class="text-3xl font-extrabold text-emerald-600">0</h3>
+                    <p id="stat-cancelled" class="text-xs text-slate-400 mt-1">0 dibatalkan</p>
+                </div>
+            </div>
+
+            <div onclick="showDashboardPopup('inprogress')" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between cursor-pointer hover:border-blue-400 hover:shadow-md transition-all group">
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-blue-600 transition-colors">Sedang Berjalan</span>
+                    <i class="fa-solid fa-spinner text-blue-500 text-sm"></i>
+                </div>
+                <div class="mt-4">
+                    <h3 id="stat-in-progress-jobs" class="text-3xl font-extrabold text-blue-600">0</h3>
+                    <p id="stat-pending" class="text-xs text-slate-400 mt-1">0 pending / hold</p>
+                </div>
+            </div>
+
+            <div onclick="showDashboardPopup('completion')" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between cursor-pointer hover:border-indigo-400 hover:shadow-md transition-all group">
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-indigo-600 transition-colors">Tingkat Penyelesaian</span>
+                    <i class="fa-solid fa-bullseye text-indigo-500 text-sm"></i>
+                </div>
+                <div class="mt-3">
+                    <h3 id="stat-completion-rate" class="text-2xl font-extrabold text-slate-800">0%</h3>
+                    <div class="w-full bg-slate-100 rounded-full h-1.5 my-2 overflow-hidden">
+                        <div id="rate-progress-bar" class="bg-blue-600 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                    <p id="stat-avg-progress" class="text-[11px] text-slate-400">Rata-rata progress 0%</p>
+                </div>
+            </div>
+
+            <div onclick="showDashboardPopup('overdue')" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between cursor-pointer hover:border-rose-400 hover:shadow-md transition-all group">
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-rose-600 transition-colors">Lewat Deadline</span>
+                    <i class="fa-solid fa-triangle-exclamation text-rose-500 text-sm"></i>
+                </div>
+                <div class="mt-4">
+                    <h3 id="stat-overdue" class="text-3xl font-extrabold text-rose-600">0</h3>
+                    <p class="text-xs text-slate-400 mt-1">Belum selesai & melewati target</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm lg:col-span-2 flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-bold text-slate-900 text-sm">Status Kerjaan per Bulan</h3>
+                    <span id="chart-year-label" class="text-xs font-semibold text-slate-400">2026</span>
+                </div>
+                <div class="h-64 relative">
+                    <canvas id="monthlyStatusChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+                <h3 class="font-bold text-slate-900 text-sm mb-4">Distribusi Status</h3>
+                <div class="h-48 relative flex items-center justify-center">
+                    <canvas id="statusDistributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+                <h3 class="font-bold text-slate-900 text-sm mb-4">Kerjaan per Modul</h3>
+                <div class="h-64 relative">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-bold text-slate-900 text-sm">Kerjaan Terbaru</h3>
+                    <button onclick="location.href='../kerjaan/index.html'" class="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors">Lihat semua <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                </div>
+                <div id="recent-logs-list" class="space-y-3.5 flex-1 overflow-y-auto max-h-[240px]">
+                    <p class="text-xs text-slate-400 py-8 text-center">Memuat data...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Mobile Bottom Nav -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40 flex items-center justify-around py-2 px-3 shadow-lg">
+        <button onclick="location.href='index.html'" class="flex flex-col items-center justify-center flex-1 py-1 text-blue-600">
+            <i class="fa-solid fa-chart-pie text-base mb-0.5"></i><span class="text-[10px] font-bold">Dashboard</span>
+        </button>
+        <button onclick="location.href='../kerjaan/index.html'" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400">
+            <i class="fa-solid fa-list-check text-base mb-0.5"></i><span class="text-[10px] font-medium">Daftar Kerja</span>
+        </button>
+        <button onclick="location.href='../profil/index.html'" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400">
+            <i class="fa-solid fa-user text-base mb-0.5"></i><span class="text-[10px] font-medium">Profil</span>
+        </button>
+    </nav>
+
+    <!-- Dashboard List Popup Modal -->
+    <div id="dashboard-list-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden overflow-y-auto">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden border border-slate-100 my-8">
+            <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 to-blue-50/30">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-layer-group text-sm"></i>
+                    </div>
+                    <div>
+                        <span id="dash-modal-subtitle" class="text-[10px] font-bold uppercase tracking-wider text-blue-600">Rincian Data</span>
+                        <h3 id="dash-modal-title" class="font-extrabold text-slate-900 text-base">Daftar Kerjaan</h3>
+                    </div>
+                </div>
+                <button onclick="closeDashboardPopup()" class="w-8 h-8 rounded-full bg-white border border-slate-200 hover:bg-slate-100 text-slate-500 flex items-center justify-center shadow-sm">
+                    <i class="fa-solid fa-xmark text-xs"></i>
+                </button>
+            </div>
+            <div class="p-6 max-h-[70vh] overflow-y-auto">
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50/80 border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                    <th class="py-3 px-4">Tanggal</th>
+                                    <th class="py-3 px-4">Judul & Program / Modul</th>
+                                    <th class="py-3 px-4">PIC</th>
+                                    <th class="py-3 px-4">Prioritas</th>
+                                    <th class="py-3 px-4">Progress</th>
+                                    <th class="py-3 px-4">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dash-modal-table-body" class="divide-y divide-slate-100 text-xs"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 bg-slate-50 border-t border-slate-100 text-right">
+                <button onclick="closeDashboardPopup()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-md">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Detail Log Kerja (Tunggal) -->
+    <div id="detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden overflow-y-auto">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-100 my-8">
+            <div class="p-6 border-b flex items-center justify-between bg-gradient-to-r from-slate-50 to-blue-50/30">
+                <div>
+                    <span class="text-[10px] font-bold uppercase text-blue-600">Detail Kerjaan</span>
+                    <h3 id="detail-title" class="font-extrabold text-slate-900 text-base"></h3>
+                </div>
+                <button onclick="closeDetailModal()" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-500 flex items-center justify-center"><i class="fa-solid fa-xmark text-xs"></i></button>
+            </div>
+            <div class="p-6 space-y-6 text-xs max-h-[70vh] overflow-y-auto">
+                <div class="grid grid-cols-2 gap-4 p-4 bg-blue-50/40 rounded-2xl">
+                    <div><span class="text-[10px] font-bold text-blue-600 block">Program</span><span id="detail-program-name" class="font-bold font-mono"></span></div>
+                    <div><span class="text-[10px] font-bold text-blue-600 block">Modul</span><span id="detail-module-name" class="font-bold"></span></div>
+                </div>
+                <div class="grid grid-cols-4 gap-4 p-4 bg-slate-50 rounded-2xl">
+                    <div><span class="text-[10px] font-bold text-slate-400 block">Kategori</span><span id="detail-category" class="font-bold"></span></div>
+                    <div><span class="text-[10px] font-bold text-slate-400 block">PIC</span><span id="detail-pic" class="font-bold"></span></div>
+                    <div><span class="text-[10px] font-bold text-slate-400 block">Prioritas</span><span id="detail-priority" class="font-bold"></span></div>
+                    <div><span class="text-[10px] font-bold text-slate-400 block">Status</span><span id="detail-status" class="font-bold"></span></div>
+                </div>
+                <div><span class="text-[11px] font-bold text-slate-400 block mb-1">Deskripsi</span><p id="detail-description" class="text-slate-600 bg-slate-50 p-4 rounded-2xl leading-relaxed"></p></div>
+                <div><span class="text-[11px] font-bold text-blue-600 block mb-2">Gambar Requirement</span><div id="detail-req-images" class="flex flex-wrap gap-2.5"></div></div>
+                <div><span class="text-[11px] font-bold text-emerald-600 block mb-2">Gambar Testing</span><div id="detail-test-images" class="flex flex-wrap gap-2.5"></div></div>
+            </div>
+            <div class="p-4 bg-slate-50 border-t text-right">
+                <button onclick="closeDetailModal()" class="px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-xs shadow-md">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div id="lightbox-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-2 hidden" onclick="closeLightbox()">
+        <div class="relative"><img id="lightbox-img" src="" class="max-w-[95vw] max-h-[92vh] rounded-2xl"></div>
+    </div>
+
+    <script>
+        let auth, db, logsData = [], userDisplayName = "User";
+        let monthlyChartInstance, distributionChartInstance, categoryChartInstance;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(initDashboard, 300);
+        });
+
+        function showLoader(text="Memuat...") {
+            document.getElementById('loader-text').textContent = text;
+            document.getElementById('global-loader').classList.remove('hidden');
+        }
+        function hideLoader() { document.getElementById('global-loader').classList.add('hidden'); }
+
+        function initDashboard() {
+            const firebaseConfig = {
+                apiKey: "AIzaSyDdHNw_tN_keSlNePxCib8M98dsxo00_Gg",
+                authDomain: "log-kerja.firebaseapp.com",
+                projectId: "log-kerja",
+                storageBucket: "log-kerja.firebasestorage.app",
+                messagingSenderId: "567064697097",
+                appId: "1:567064697097:web:9fab04051f05eaf8d45bd8",
+                measurementId: "G-7236830RH2"
+            };
+            const fm = window.firebaseModules;
+            const app = fm.initializeApp(firebaseConfig);
+            auth = fm.getAuth(app);
+            db = fm.getFirestore(app);
+
+            showLoader("Memuat Dashboard...");
+            fm.onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    await loadUserProfile(user.uid);
+                    setupRealtimeListeners(user.uid);
+                } else {
+                    window.location.href = '../index.html';
+                }
+            });
+        }
+
+        async function loadUserProfile(userId) {
+            const fm = window.firebaseModules;
+            try {
+                const docSnap = await fm.getDoc(fm.doc(db, 'users', userId, 'settings', 'profile'));
+                if (docSnap.exists()) {
+                    userDisplayName = docSnap.data().name || 'User';
+                    document.getElementById('dashboard-greeting').textContent = `Hai, ${userDisplayName}`;
+                } else {
+                    document.getElementById('dashboard-greeting').textContent = `Hai, User`;
+                }
+            } catch (e) {
+                document.getElementById('dashboard-greeting').textContent = `Hai, User`;
+            }
+        }
+
+        function setupRealtimeListeners(userId) {
+            const fm = window.firebaseModules;
+            fm.onSnapshot(fm.query(fm.collection(db, 'users', userId, 'work_logs')), (snapshot) => {
+                logsData = [];
+                snapshot.forEach(doc => logsData.push({ id: doc.id, ...doc.data() }));
+                updateYearDropdown();
+                renderDashboardData();
+                hideLoader();
+            });
+        }
+
+        function updateYearDropdown() {
+            const yearsSet = new Set();
+            logsData.forEach(item => {
+                if (item.date) yearsSet.add(item.date.split('-')[0]);
+            });
+            if (yearsSet.size === 0) yearsSet.add(new Date().getFullYear().toString());
+            const sortedYears = Array.from(yearsSet).sort((a,b) => b-a);
+            const select = document.getElementById('filter-year');
+            const currentVal = select.value;
+            select.innerHTML = `<option value="">Semua Tahun</option>` + sortedYears.map(y => `<option value="${y}">${y}</option>`).join('');
+            if (yearsSet.has(currentVal)) select.value = currentVal;
+        }
+
+        function renderDashboardData() {
+            const year = document.getElementById('filter-year').value;
+            const month = document.getElementById('filter-month').value;
+            const filtered = logsData.filter(item => {
+                if (!item.date) return false;
+                const [y, m] = item.date.split('-');
+                return (!year || y === year) && (!month || m === month);
+            });
+
+            const total = filtered.length;
+            const done = filtered.filter(i => i.status === 'Done').length;
+            const inProgress = filtered.filter(i => i.status === 'In Progress').length;
+            const todo = filtered.filter(i => i.status === 'To Do').length;
+            const pending = filtered.filter(i => i.status === 'Pending / Hold').length;
+            const cancelled = filtered.filter(i => i.status === 'Cancelled').length;
+            const unstarted = todo + pending;
+            const todayStr = new Date().toISOString().split('T')[0];
+            const overdue = filtered.filter(i => i.deadline && i.deadline < todayStr && i.status !== 'Done' && i.status !== 'Cancelled').length;
+
+            const rate = total > 0 ? ((done / total)*100).toFixed(1) : 0;
+            const avgProg = total > 0 ? (filtered.reduce((a,c) => a + Number(c.progress || 0), 0) / total).toFixed(1) : 0;
+
+            document.getElementById('stat-total-jobs').textContent = total;
+            document.getElementById('stat-unstarted').textContent = `${unstarted} belum dimulai`;
+            document.getElementById('stat-completed-jobs').textContent = done;
+            document.getElementById('stat-cancelled').textContent = `${cancelled} dibatalkan`;
+            document.getElementById('stat-in-progress-jobs').textContent = inProgress;
+            document.getElementById('stat-pending').textContent = `${pending} pending / hold`;
+            document.getElementById('stat-completion-rate').textContent = rate + '%';
+            document.getElementById('rate-progress-bar').style.width = rate + '%';
+            document.getElementById('stat-avg-progress').textContent = `Rata-rata progress ${avgProg}%`;
+            document.getElementById('stat-overdue').textContent = overdue;
+            document.getElementById('chart-year-label').textContent = year || 'Semua Tahun';
+
+            renderCharts(filtered, year);
+            renderRecent(filtered);
+        }
+
+        function renderCharts(filtered, year) {
+            const mCounts = {};
+            for(let i=1; i<=12; i++) mCounts[String(i).padStart(2,'0')] = { Done:0, 'In Progress':0, 'To Do':0, 'Pending / Hold':0, Cancelled:0 };
+            filtered.forEach(i => {
+                if (i.date) {
+                    const [y, m] = i.date.split('-');
+                    if ((!year || y === year) && mCounts[m]) mCounts[m][i.status || 'To Do']++;
+                }
+            });
+            const mKeys = Object.keys(mCounts);
+
+            if (monthlyChartInstance) monthlyChartInstance.destroy();
+            monthlyChartInstance = new Chart(document.getElementById('monthlyStatusChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
+                    datasets: [
+                        { label: 'Done', data: mKeys.map(m=>mCounts[m].Done), backgroundColor: '#10b981', borderRadius: 4 },
+                        { label: 'In Progress', data: mKeys.map(m=>mCounts[m]['In Progress']), backgroundColor: '#3b82f6', borderRadius: 4 },
+                        { label: 'To Do', data: mKeys.map(m=>mCounts[m]['To Do']), backgroundColor: '#64748b', borderRadius: 4 },
+                        { label: 'Pending', data: mKeys.map(m=>mCounts[m]['Pending / Hold']), backgroundColor: '#f59e0b', borderRadius: 4 },
+                        { label: 'Cancelled', data: mKeys.map(m=>mCounts[m].Cancelled), backgroundColor: '#ef4444', borderRadius: 4 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, grid: { color: '#f1f5f9' } } }, plugins: { legend: { display: false } } }
+            });
+
+            if (distributionChartInstance) distributionChartInstance.destroy();
+            distributionChartInstance = new Chart(document.getElementById('statusDistributionChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['To Do', 'In Progress', 'Done', 'Pending', 'Cancelled'],
+                    datasets: [{
+                        data: [
+                            filtered.filter(i=>i.status==='To Do').length,
+                            filtered.filter(i=>i.status==='In Progress').length,
+                            filtered.filter(i=>i.status==='Done').length,
+                            filtered.filter(i=>i.status==='Pending / Hold').length,
+                            filtered.filter(i=>i.status==='Cancelled').length
+                        ],
+                        backgroundColor: ['#64748b', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'],
+                        borderWidth: 0, cutout: '75%'
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            const cats = {};
+            filtered.forEach(i => { const c = i.moduleName || i.category || 'Lainnya'; cats[c] = (cats[c] || 0) + 1; });
+            if (categoryChartInstance) categoryChartInstance.destroy();
+            categoryChartInstance = new Chart(document.getElementById('categoryChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(cats).length ? Object.keys(cats) : ['Kosong'],
+                    datasets: [{ data: Object.values(cats).length ? Object.values(cats) : [0], backgroundColor: '#3b82f6', borderRadius: 4, barThickness: 20 }]
+                },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { grid: { color: '#f1f5f9' } }, y: { grid: { display: false } } }, plugins: { legend: { display: false } } }
+            });
+        }
+
+        function renderRecent(filtered) {
+            const container = document.getElementById('recent-logs-list');
+            const sorted = [...filtered].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+            if (!sorted.length) { container.innerHTML = `<p class="text-xs text-slate-400 py-6 text-center">Belum ada data kerjaan.</p>`; return; }
+            container.innerHTML = sorted.map(i => `
+                <div onclick="viewDetail('${i.id}')" class="flex items-center justify-between p-3 rounded-2xl bg-slate-50/70 border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors">
+                    <div>
+                        <h4 class="font-bold text-xs text-slate-800">${escapeHtml(i.title)}</h4>
+                        <p class="text-[11px] text-blue-600 font-mono mt-0.5">${escapeHtml(i.programName || '-')} (${escapeHtml(i.moduleName || i.category || '-')})</p>
+                    </div>
+                    <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold ${i.status==='Done'?'bg-emerald-50 text-emerald-600':'bg-blue-50 text-blue-600'}">${i.status}</span>
+                </div>
+            `).join('');
+        }
+
+        function showDashboardPopup(type) {
+            const selectedYear = document.getElementById('filter-year').value;
+            const selectedMonth = document.getElementById('filter-month').value;
+
+            const filtered = logsData.filter(item => {
+                if (!item.date) return false;
+                const [y, m] = item.date.split('-');
+                return (!selectedYear || y === selectedYear) && (!selectedMonth || m === selectedMonth);
+            });
+
+            let subset = filtered;
+            const todayStr = new Date().toISOString().split('T')[0];
+            if (type === 'done') subset = filtered.filter(i => i.status === 'Done');
+            else if (type === 'inprogress') subset = filtered.filter(i => i.status === 'In Progress');
+            else if (type === 'completion') subset = filtered.filter(i => i.status === 'Done');
+            else if (type === 'overdue') subset = filtered.filter(i => i.deadline && i.deadline < todayStr && i.status !== 'Done' && i.status !== 'Cancelled');
+            
+            document.getElementById('dash-modal-title').textContent = `Rincian (${subset.length} data)`;
+            document.getElementById('dash-modal-table-body').innerHTML = subset.map(i => `
+                <tr onclick="closeDashboardPopup(); viewDetail('${i.id}')" class="hover:bg-slate-50/80 cursor-pointer transition-colors">
+                    <td class="py-3 px-4 font-semibold">${i.date}</td>
+                    <td class="py-3 px-4"><b>${escapeHtml(i.title)}</b><br><span class="text-[10px] text-blue-600">${escapeHtml(i.programName||'-')} | ${escapeHtml(i.moduleName||i.category||'-')}</span></td>
+                    <td class="py-3 px-4">${escapeHtml(i.pic||'-')}</td>
+                    <td class="py-3 px-4">${i.priority||'Medium'}</td>
+                    <td class="py-3 px-4">${i.progress||100}%</td>
+                    <td class="py-3 px-4">${i.status}</td>
+                </tr>
+            `).join('') || `<tr><td colspan="6" class="py-6 text-center text-slate-400">Tidak ada data.</td></tr>`;
+            document.getElementById('dashboard-list-modal').classList.remove('hidden');
+        }
+
+        function closeDashboardPopup() { document.getElementById('dashboard-list-modal').classList.add('hidden'); }
+
+        function viewDetail(id) {
+            const item = logsData.find(l => l.id === id);
+            if (!item) return;
+            document.getElementById('detail-title').textContent = item.title;
+            document.getElementById('detail-program-name').textContent = item.programName || '-';
+            document.getElementById('detail-module-name').textContent = item.moduleName || '-';
+            document.getElementById('detail-category').textContent = item.category || '-';
+            document.getElementById('detail-pic').textContent = item.pic || '-';
+            document.getElementById('detail-description').textContent = item.description || 'Tidak ada deskripsi.';
+            document.getElementById('detail-priority').textContent = item.priority || 'Medium';
+            document.getElementById('detail-status').textContent = item.status;
+
+            document.getElementById('detail-req-images').innerHTML = (item.requirements || []).map(img => `<div class="w-20 h-20 rounded-xl overflow-hidden border cursor-pointer"><img src="${img}" class="w-full h-full object-cover" onclick="openLightbox('${img}')"></div>`).join('') || '<span class="text-slate-400 italic">Tidak ada</span>';
+            document.getElementById('detail-test-images').innerHTML = (item.testing || []).map(img => `<div class="w-20 h-20 rounded-xl overflow-hidden border cursor-pointer"><img src="${img}" class="w-full h-full object-cover" onclick="openLightbox('${img}')"></div>`).join('') || '<span class="text-slate-400 italic">Tidak ada</span>';
+            document.getElementById('detail-modal').classList.remove('hidden');
+        }
+
+        function closeDetailModal() { document.getElementById('detail-modal').classList.add('hidden'); }
+        function openLightbox(src) { document.getElementById('lightbox-img').src = src; document.getElementById('lightbox-modal').classList.remove('hidden'); }
+        function closeLightbox() { document.getElementById('lightbox-modal').classList.add('hidden'); }
+
+        async function handleLogout() { const fm = window.firebaseModules; await fm.signOut(auth); location.href = '../index.html'; }
+        function escapeHtml(str) { return (str||'').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+    </script>
+</body>
+</html>

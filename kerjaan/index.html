@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Kerjaan &bull; LogKerja Pro</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%236366f1'/><text x='50%' y='53%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='900' font-size='42' fill='%23ffffff'>LOG</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-[#f8fafc] text-slate-800 font-sans antialiased min-h-screen flex flex-col pb-20 md:pb-0">
+
+    <!-- Global Loader -->
+    <div id="global-loader" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex flex-col items-center justify-center hidden">
+        <div class="bg-white p-6 rounded-3xl shadow-2xl flex flex-col items-center space-y-4 max-w-xs w-full mx-4 border border-slate-100 animate-pulse">
+            <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <div class="text-center">
+                <h4 id="loader-text" class="font-bold text-sm text-slate-800">Memproses Data...</h4>
+                <p class="text-[11px] text-slate-400 mt-0.5">Mohon tunggu sebentar</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK Imports -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
+
+        window.firebaseModules = {
+            initializeApp, getAuth, onAuthStateChanged, signOut,
+            getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, query, getAnalytics
+        };
+    </script>
+
+    <!-- Header Navigation -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-6">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-blue-200 font-black text-sm">
+                        LOG
+                    </div>
+                    <span class="font-bold text-base tracking-tight text-slate-900">Kerja</span>
+                </div>
+
+                <nav class="hidden md:flex items-center space-x-1">
+                    <button onclick="location.href='../dashboard/index.html'" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all">
+                        <i class="fa-solid fa-chart-pie text-xs"></i><span>Dashboard</span>
+                    </button>
+                    <button onclick="location.href='index.html'" class="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold flex items-center space-x-2 transition-all">
+                        <i class="fa-solid fa-list-check text-xs"></i><span>Daftar Kerjaan</span>
+                    </button>
+                    <button onclick="location.href='../profil/index.html'" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all">
+                        <i class="fa-solid fa-user text-xs"></i><span>Profil User</span>
+                    </button>
+                </nav>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <button onclick="openLogModal()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-200 flex items-center space-x-2">
+                    <i class="fa-solid fa-plus text-xs"></i><span>Tambah Kerjaan</span>
+                </button>
+                <button onclick="handleLogout()" class="w-9 h-9 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-600 rounded-xl flex items-center justify-center text-xs transition-all" title="Keluar">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Kerjaan Content -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-blue-600">Log Kerjaan</span>
+                <h2 class="text-2xl font-black text-slate-900 tracking-tight mt-0.5">Daftar Log Kerja</h2>
+                <p id="total-logs-found-label" class="text-xs text-slate-500 mt-1">0 data ditemukan</p>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button onclick="exportToExcel()" class="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center space-x-2">
+                    <i class="fa-solid fa-file-excel text-emerald-600"></i><span>Ekspor Excel</span>
+                </button>
+                <button onclick="exportToCSV()" class="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center space-x-2">
+                    <i class="fa-solid fa-file-csv text-blue-600"></i><span>Ekspor CSV</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Search & Filters Toolbar -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+            <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400"><i class="fa-solid fa-magnifying-glass text-xs"></i></span>
+                <input type="text" id="table-search" oninput="renderLogsTable()" placeholder="Cari judul, program, modul, PIC, catatan..." class="w-full pl-11 pr-24 py-3 bg-slate-50/80 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white">
+                <button onclick="renderLogsTable()" class="absolute right-1.5 top-1.5 bottom-1.5 px-4 bg-blue-600 text-white rounded-lg text-xs font-bold">Cari</button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Tahun</label>
+                    <select id="table-filter-year" onchange="renderLogsTable()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700"></select>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Bulan</label>
+                    <select id="table-filter-month" onchange="renderLogsTable()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700">
+                        <option value="">Semua Bulan</option>
+                        <option value="01">Januari</option><option value="02">Februari</option><option value="03">Maret</option><option value="04">April</option>
+                        <option value="05">Mei</option><option value="06">Juni</option><option value="07">Juli</option><option value="08">Agustus</option>
+                        <option value="09">September</option><option value="10">Oktober</option><option value="11">November</option><option value="12">Desember</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Status</label>
+                    <select id="table-filter-status" onchange="renderLogsTable()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700">
+                        <option value="">Semua Status</option>
+                        <option value="Done">Done</option><option value="In Progress">In Progress</option><option value="To Do">To Do</option><option value="Pending / Hold">Pending / Hold</option><option value="Cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Modul</label>
+                    <select id="table-filter-category" onchange="renderLogsTable()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700">
+                        <option value="">Semua Modul</option>
+                        <option value="FICO SAP">FICO SAP</option><option value="MM SAP">MM SAP</option><option value="SD SAP">SD SAP</option><option value="PP SAP">PP SAP</option><option value="BW SAP">BW SAP</option><option value="BMS">BMS</option><option value="AMS">AMS</option><option value="FMS">FMS</option><option value="GAMS">GAMS</option><option value="HRMS">HRMS</option><option value="HLS">HLS</option><option value="RSS">RSS</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Prioritas</label>
+                    <select id="table-filter-priority" onchange="renderLogsTable()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700">
+                        <option value="">Semua Prioritas</option>
+                        <option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50/80 border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                            <th class="py-3.5 px-6">Tanggal</th>
+                            <th class="py-3.5 px-4">Judul & Program / Modul</th>
+                            <th class="py-3.5 px-4">PIC</th>
+                            <th class="py-3.5 px-4">Prioritas</th>
+                            <th class="py-3.5 px-4">Progress</th>
+                            <th class="py-3.5 px-4">Status</th>
+                            <th class="py-3.5 px-4">Timeline</th>
+                            <th class="py-3.5 px-6 text-right">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logs-table-body" class="divide-y divide-slate-100 text-xs">
+                        <tr><td colspan="8" class="py-12 text-center text-slate-400">Memuat data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Mobile Bottom Nav -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40 flex items-center justify-around py-2 px-3 shadow-lg">
+        <button onclick="location.href='../dashboard/index.html'" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400">
+            <i class="fa-solid fa-chart-pie text-base mb-0.5"></i><span class="text-[10px] font-medium">Dashboard</span>
+        </button>
+        <button onclick="location.href='index.html'" class="flex flex-col items-center justify-center flex-1 py-1 text-blue-600">
+            <i class="fa-solid fa-list-check text-base mb-0.5"></i><span class="text-[10px] font-bold">Daftar Kerja</span>
+        </button>
+        <button onclick="location.href='../profil/index.html'" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400">
+            <i class="fa-solid fa-user text-base mb-0.5"></i><span class="text-[10px] font-medium">Profil</span>
+        </button>
+    </nav>
+
+    <!-- Modal Form Tambah/Edit Log Kerjaan -->
+    <div id="log-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden overflow-y-auto">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-100 my-8">
+            <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <h3 id="log-modal-title" class="font-bold text-base text-slate-900">Tambah Log Kerjaan</h3>
+                <button onclick="closeLogModal()" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-500 flex items-center justify-center"><i class="fa-solid fa-xmark text-xs"></i></button>
+            </div>
+            <form id="log-form" onsubmit="handleLogFormSubmit(event)" class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+                <input type="hidden" id="log-id">
+                <div>
+                    <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Judul Tugas / Pekerjaan</label>
+                    <input type="text" id="log-title" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Misal: New Requirement ZFI029">
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Nama Program</label>
+                        <input type="text" id="log-program-name" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Misal: ZFI_REPORT_SALES">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Modul Program</label>
+                        <select id="log-module-name" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="FICO SAP">FICO SAP</option><option value="MM SAP">MM SAP</option><option value="SD SAP">SD SAP</option><option value="PP SAP">PP SAP</option>
+                            <option value="BW SAP">BW SAP</option><option value="BMS">BMS</option><option value="AMS">AMS</option><option value="FMS">FMS</option>
+                            <option value="GAMS">GAMS</option><option value="HRMS">HRMS</option><option value="HLS">HLS</option><option value="RSS">RSS</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Kategori / Proyek</label>
+                        <select id="log-category" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="SAP BW">Query BW</option><option value="Report">Report</option><option value="Form">Form</option>
+                            <option value="Enhancement">Enhancement</option><option value="Interface WSDL">Interface WSDL</option><option value="Interface RestAPI">Interface RestAPI</option><option value="Analyzer BW">Analyzer BW</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">PIC</label>
+                        <input type="text" id="log-pic" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Misal: Pak Yahya">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Tanggal Mulai</label>
+                        <input type="date" id="log-date" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Tanggal Selesai</label>
+                        <input type="date" id="log-completion-date" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Deadline</label>
+                        <input type="date" id="log-deadline" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Prioritas</label>
+                        <select id="log-priority" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                            <option value="Medium">Medium</option><option value="High">High</option><option value="Low">Low</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Status</label>
+                        <select id="log-status" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                            <option value="Done">Done</option><option value="In Progress">In Progress</option><option value="To Do">To Do</option><option value="Pending / Hold">Pending / Hold</option><option value="Cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-2">
+                    <div class="flex justify-between items-center text-xs font-bold uppercase text-blue-600">
+                        <span id="progress-label-text">PROGRESS — 0%</span>
+                    </div>
+                    <input type="range" min="0" max="100" value="0" id="log-progress" oninput="updateProgressLabel(this.value)" class="w-full accent-blue-600">
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Deskripsi Detail</label>
+                    <textarea id="log-description" rows="3" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs" placeholder="Uraikan detail pekerjaan..."></textarea>
+                </div>
+
+                <div class="border-t border-slate-100 pt-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-xs font-bold uppercase text-blue-600">Gambar Requirement</label>
+                        <span id="req-count-label" class="text-xs text-slate-400">0 Dipilih</span>
+                    </div>
+                    <input type="file" id="req-file-input" accept="image/*" multiple onchange="handleImageUpload('requirement')" class="w-full text-xs text-slate-500">
+                    <div id="req-preview-container" class="flex flex-wrap gap-2 mt-3"></div>
+                </div>
+
+                <div class="border-t border-slate-100 pt-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-xs font-bold uppercase text-emerald-600">Gambar Testing</label>
+                        <span id="test-count-label" class="text-xs text-slate-400">0 Dipilih</span>
+                    </div>
+                    <input type="file" id="test-file-input" accept="image/*" multiple onchange="handleImageUpload('testing')" class="w-full text-xs text-slate-500">
+                    <div id="test-preview-container" class="flex flex-wrap gap-2 mt-3"></div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-end space-x-3">
+                    <button type="button" onclick="closeLogModal()" class="px-5 py-3 bg-slate-100 text-slate-600 rounded-2xl text-xs font-bold">Batal</button>
+                    <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-2xl text-xs font-bold shadow-md shadow-blue-200">Simpan Kerja</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Detail Log Kerja -->
+    <div id="detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden overflow-y-auto">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-100 my-8">
+            <div class="p-6 border-b flex items-center justify-between bg-gradient-to-r from-slate-50 to-blue-50/30">
+                <div>
+                    <span class="text-[10px] font-bold uppercase text-blue-600">Detail Kerjaan</span>
+                    <h3 id="detail-title" class="font-extrabold text-slate-900 text-base"></h3>
+                </div>
+                <button onclick="closeDetailModal()" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-500 flex items-center justify-center"><i class="fa-solid fa-xmark text-xs"></i></button>
+            </div>
+            <div class="p-6 space-y-6 text-xs max-h-[70vh] overflow-y-auto">
+                <div class="grid grid-cols-2 gap-4 p-4 bg-blue-50/40 rounded-2xl">
+                    <div><span class="text-[10px] font-bold text-blue-600 block">Program</span><span id="detail-program-name" class="font-bold font-mono"></span></div>
+                    <div><span class="text-[10px] font-bold text-blue-600 block">Modul</span><span id="detail-module-name" class="font-bold"></span></div>
+                </div>
+                <div class="grid grid-cols-4 gap-4 p-4 bg-slate-50 rounded-2xl">
+                    <div><span class="text-[10px] font-bold text-slate-400 block">Kategori</span><span id="detail-category" class="font-bold"></span></div>
+                    <div><span class="text-[10px] font-bold text-slate-400 block">PIC</span><span id="detail-pic" class="font-bold"></span></div>
+                    <div><span class="text-[10px] font-bold text-slate-400 block">Prioritas</span><span id="detail-priority" class="font-bold"></span></div>
+                    <div><span class="text-[10px] font-bold text-slate-400 block">Status</span><span id="detail-status" class="font-bold"></span></div>
+                </div>
+                <div><span class="text-[11px] font-bold text-slate-400 block mb-1">Deskripsi</span><p id="detail-description" class="text-slate-600 bg-slate-50 p-4 rounded-2xl leading-relaxed"></p></div>
+                <div><span class="text-[11px] font-bold text-blue-600 block mb-2">Gambar Requirement</span><div id="detail-req-images" class="flex flex-wrap gap-2.5"></div></div>
+                <div><span class="text-[11px] font-bold text-emerald-600 block mb-2">Gambar Testing</span><div id="detail-test-images" class="flex flex-wrap gap-2.5"></div></div>
+            </div>
+            <div class="p-4 bg-slate-50 border-t text-right">
+                <button onclick="closeDetailModal()" class="px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-xs shadow-md">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div id="lightbox-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-2 hidden" onclick="closeLightbox()">
+        <div class="relative"><img id="lightbox-img" src="" class="max-w-[95vw] max-h-[92vh] rounded-2xl"></div>
+    </div>
+
+    <script>
+        let auth, db, currentUser = null, logsData = [];
+        let currentRequirementImages = [], currentTestingImages = [];
+
+        window.addEventListener('DOMContentLoaded', () => { setTimeout(initKerjaan, 300); });
+
+        function showLoader(text="Memproses...") { document.getElementById('loader-text').textContent = text; document.getElementById('global-loader').classList.remove('hidden'); }
+        function hideLoader() { document.getElementById('global-loader').classList.add('hidden'); }
+        function updateProgressLabel(val) { document.getElementById('progress-label-text').textContent = `PROGRESS — ${val}%`; }
+
+        function initKerjaan() {
+            const firebaseConfig = {
+                apiKey: "AIzaSyDdHNw_tN_keSlNePxCib8M98dsxo00_Gg",
+                authDomain: "log-kerja.firebaseapp.com",
+                projectId: "log-kerja",
+                storageBucket: "log-kerja.firebasestorage.app",
+                messagingSenderId: "567064697097",
+                appId: "1:567064697097:web:9fab04051f05eaf8d45bd8",
+                measurementId: "G-7236830RH2"
+            };
+            const fm = window.firebaseModules;
+            const app = fm.initializeApp(firebaseConfig);
+            auth = fm.getAuth(app);
+            db = fm.getFirestore(app);
+
+            const today = new Date().toISOString().split('T')[0];
+            ['log-date','log-completion-date','log-deadline'].forEach(id => document.getElementById(id).value = today);
+
+            showLoader("Memuat Daftar Kerjaan...");
+            fm.onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    setupRealtimeListeners(user.uid);
+                } else {
+                    window.location.href = '../index.html';
+                }
+            });
+        }
+
+        function setupRealtimeListeners(userId) {
+            const fm = window.firebaseModules;
+            fm.onSnapshot(fm.query(fm.collection(db, 'users', userId, 'work_logs')), (snapshot) => {
+                logsData = [];
+                snapshot.forEach(doc => logsData.push({ id: doc.id, ...doc.data() }));
+                updateYearDropdown();
+                renderLogsTable();
+                hideLoader();
+            });
+        }
+
+        function updateYearDropdown() {
+            const yearsSet = new Set();
+            logsData.forEach(i => { if (i.date) yearsSet.add(i.date.split('-')[0]); });
+            if (!yearsSet.size) yearsSet.add(new Date().getFullYear().toString());
+            const sorted = Array.from(yearsSet).sort((a,b)=>b-a);
+            const select = document.getElementById('table-filter-year');
+            const val = select.value;
+            select.innerHTML = `<option value="">Semua Tahun</option>` + sorted.map(y => `<option value="${y}">${y}</option>`).join('');
+            if (yearsSet.has(val)) select.value = val;
+        }
+
+        function renderLogsTable() {
+            const tbody = document.getElementById('logs-table-body');
+            const keyword = document.getElementById('table-search').value.toLowerCase();
+            const yFilter = document.getElementById('table-filter-year').value;
+            const mFilter = document.getElementById('table-filter-month').value;
+            const sFilter = document.getElementById('table-filter-status').value;
+            const cFilter = document.getElementById('table-filter-category').value;
+            const pFilter = document.getElementById('table-filter-priority').value;
+
+            const filtered = logsData.filter(i => {
+                const matchSearch = !keyword || (i.title+i.programName+i.moduleName+i.description+i.pic).toLowerCase().includes(keyword);
+                let matchDate = true;
+                if (i.date) {
+                    const [y, m] = i.date.split('-');
+                    if (yFilter && y !== yFilter) matchDate = false;
+                    if (mFilter && m !== mFilter) matchDate = false;
+                } else if (yFilter || mFilter) matchDate = false;
+
+                return matchSearch && matchDate && (!sFilter || i.status === sFilter) && (!cFilter || i.moduleName === cFilter || i.category === cFilter) && (!pFilter || i.priority === pFilter);
+            });
+
+            filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
+            document.getElementById('total-logs-found-label').textContent = `${filtered.length} data ditemukan`;
+
+            if (!filtered.length) {
+                tbody.innerHTML = `<tr><td colspan="8" class="py-12 text-center text-slate-400">Tidak ada data ditemukan.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(i => {
+                const d = new Date(i.date);
+                const badge = i.status==='Done'?'bg-emerald-50 text-emerald-700':i.status==='In Progress'?'bg-blue-50 text-blue-700':'bg-slate-100 text-slate-700';
+                return `
+                    <tr onclick="viewDetail('${i.id}')" class="hover:bg-slate-50/80 cursor-pointer">
+                        <td class="py-4 px-6 font-semibold">${d.getDate()} ${d.toLocaleString('id-ID',{month:'short'})} ${d.getFullYear()}</td>
+                        <td class="py-4 px-4"><div class="font-bold text-slate-900">${escapeHtml(i.title)}</div><div class="text-[11px] text-blue-600 font-mono">${escapeHtml(i.programName||'-')} | ${escapeHtml(i.moduleName||i.category||'-')}</div></td>
+                        <td class="py-4 px-4">${escapeHtml(i.pic||'-')}</td>
+                        <td class="py-4 px-4"><span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-blue-50 text-blue-700">${i.priority||'Medium'}</span></td>
+                        <td class="py-4 px-4"><div class="flex items-center space-x-2"><div class="w-20 bg-slate-200 rounded-full h-1.5"><div class="bg-blue-600 h-1.5 rounded-full" style="width:${i.progress||100}%"></div></div><span class="text-[11px] font-bold">${i.progress||100}%</span></div></td>
+                        <td class="py-4 px-4"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${badge}">${i.status}</span></td>
+                        <td class="py-4 px-4 text-[11px]">Mulai: ${i.date}<br><span class="text-emerald-600">Selesai: ${i.completionDate||'-'}</span></td>
+                        <td class="py-4 px-6 text-right space-x-1" onclick="event.stopPropagation()">
+                            <button onclick="openLogModal('${i.id}')" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600"><i class="fa-solid fa-pen text-[11px]"></i></button>
+                            <button onclick="deleteLog('${i.id}')" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-rose-50 hover:text-rose-600"><i class="fa-solid fa-trash text-[11px]"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function processAndCompressImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = e => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width, h = img.height;
+                        if (w > h && w > 900) { h = Math.round((h * 900) / w); w = 900; }
+                        else if (h > 900) { w = Math.round((w * 900) / h); h = 900; }
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        let q = 0.7, url = canvas.toDataURL('image/jpeg', q);
+                        while ((url.length * 0.75 / 1024) > 200 && q > 0.1) { q -= 0.1; url = canvas.toDataURL('image/jpeg', q); }
+                        resolve(url);
+                    };
+                };
+            });
+        }
+
+        async function handleImageUpload(type) {
+            showLoader("Mengompres Gambar...");
+            const inputId = type === 'requirement' ? 'req-file-input' : 'test-file-input';
+            const files = document.getElementById(inputId).files;
+            const target = type === 'requirement' ? currentRequirementImages : currentTestingImages;
+            for (let f of files) target.push(await processAndCompressImage(f));
+            renderImagePreviews(type);
+            document.getElementById(inputId).value = '';
+            hideLoader();
+        }
+
+        function renderImagePreviews(type) {
+            const container = document.getElementById(type === 'requirement' ? 'req-preview-container' : 'test-preview-container');
+            const arr = type === 'requirement' ? currentRequirementImages : currentTestingImages;
+            document.getElementById(type === 'requirement' ? 'req-count-label' : 'test-count-label').textContent = `${arr.length} Dipilih`;
+            container.innerHTML = arr.map((img, idx) => `
+                <div class="relative w-16 h-16 rounded-xl overflow-hidden border group bg-slate-50">
+                    <img src="${img}" class="w-full h-full object-cover">
+                    <button type="button" onclick="removeImage('${type}',${idx})" class="absolute inset-0 bg-slate-900/60 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center text-xs"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function removeImage(type, idx) {
+            if (type === 'requirement') { currentRequirementImages.splice(idx, 1); renderImagePreviews('requirement'); }
+            else { currentTestingImages.splice(idx, 1); renderImagePreviews('testing'); }
+        }
+
+        function openLogModal(id = null) {
+            document.getElementById('log-modal').classList.remove('hidden');
+            if (id) {
+                document.getElementById('log-modal-title').textContent = 'Edit Log Kerjaan';
+                const item = logsData.find(l => l.id === id);
+                if (item) {
+                    document.getElementById('log-id').value = item.id;
+                    document.getElementById('log-title').value = item.title;
+                    document.getElementById('log-program-name').value = item.programName || '';
+                    document.getElementById('log-module-name').value = item.moduleName || 'FICO SAP';
+                    document.getElementById('log-category').value = item.category || 'SAP BW';
+                    document.getElementById('log-pic').value = item.pic || '';
+                    document.getElementById('log-date').value = item.date;
+                    document.getElementById('log-completion-date').value = item.completionDate || '';
+                    document.getElementById('log-deadline').value = item.deadline || item.date;
+                    document.getElementById('log-priority').value = item.priority || 'Medium';
+                    document.getElementById('log-status').value = item.status;
+                    document.getElementById('log-progress').value = item.progress !== undefined ? item.progress : 100;
+                    updateProgressLabel(item.progress !== undefined ? item.progress : 100);
+                    document.getElementById('log-description').value = item.description || '';
+                    currentRequirementImages = [...(item.requirements || [])];
+                    currentTestingImages = [...(item.testing || [])];
+                }
+            } else {
+                document.getElementById('log-modal-title').textContent = 'Tambah Log Kerjaan';
+                document.getElementById('log-form').reset();
+                document.getElementById('log-id').value = '';
+                const today = new Date().toISOString().split('T')[0];
+                ['log-date','log-completion-date','log-deadline'].forEach(id => document.getElementById(id).value = today);
+                document.getElementById('log-progress').value = 0;
+                updateProgressLabel(0);
+                currentRequirementImages = []; currentTestingImages = [];
+            }
+            renderImagePreviews('requirement'); renderImagePreviews('testing');
+        }
+        function closeLogModal() { document.getElementById('log-modal').classList.add('hidden'); }
+
+        function viewDetail(id) {
+            const item = logsData.find(l => l.id === id);
+            if (!item) return;
+            document.getElementById('detail-title').textContent = item.title;
+            document.getElementById('detail-program-name').textContent = item.programName || '-';
+            document.getElementById('detail-module-name').textContent = item.moduleName || '-';
+            document.getElementById('detail-category').textContent = item.category || '-';
+            document.getElementById('detail-pic').textContent = item.pic || '-';
+            document.getElementById('detail-description').textContent = item.description || 'Tidak ada deskripsi.';
+            document.getElementById('detail-priority').textContent = item.priority || 'Medium';
+            document.getElementById('detail-status').textContent = item.status;
+
+            document.getElementById('detail-req-images').innerHTML = (item.requirements || []).map(img => `<div class="w-20 h-20 rounded-xl overflow-hidden border cursor-pointer"><img src="${img}" class="w-full h-full object-cover" onclick="openLightbox('${img}')"></div>`).join('') || '<span class="text-slate-400 italic">Tidak ada</span>';
+            document.getElementById('detail-test-images').innerHTML = (item.testing || []).map(img => `<div class="w-20 h-20 rounded-xl overflow-hidden border cursor-pointer"><img src="${img}" class="w-full h-full object-cover" onclick="openLightbox('${img}')"></div>`).join('') || '<span class="text-slate-400 italic">Tidak ada</span>';
+            document.getElementById('detail-modal').classList.remove('hidden');
+        }
+        function closeDetailModal() { document.getElementById('detail-modal').classList.add('hidden'); }
+
+        async function handleLogFormSubmit(e) {
+            e.preventDefault();
+            showLoader("Menyimpan Data...");
+            const fm = window.firebaseModules;
+            const id = document.getElementById('log-id').value;
+            const payload = {
+                title: document.getElementById('log-title').value,
+                programName: document.getElementById('log-program-name').value,
+                moduleName: document.getElementById('log-module-name').value,
+                category: document.getElementById('log-category').value,
+                pic: document.getElementById('log-pic').value,
+                date: document.getElementById('log-date').value,
+                completionDate: document.getElementById('log-completion-date').value,
+                deadline: document.getElementById('log-deadline').value,
+                priority: document.getElementById('log-priority').value,
+                status: document.getElementById('log-status').value,
+                progress: parseInt(document.getElementById('log-progress').value),
+                description: document.getElementById('log-description').value,
+                requirements: currentRequirementImages,
+                testing: currentTestingImages,
+                updatedAt: new Date().toISOString()
+            };
+            try {
+                if (id) await fm.updateDoc(fm.doc(db, 'users', currentUser.uid, 'work_logs', id), payload);
+                else await fm.addDoc(fm.collection(db, 'users', currentUser.uid, 'work_logs'), payload);
+                hideLoader(); closeLogModal();
+            } catch(err) { hideLoader(); alert('Gagal menyimpan: ' + err.message); }
+        }
+
+        async function deleteLog(id) {
+            if (!confirm('Hapus data kerjaan ini?')) return;
+            showLoader("Menghapus...");
+            const fm = window.firebaseModules;
+            await fm.deleteDoc(fm.doc(db, 'users', currentUser.uid, 'work_logs', id));
+            hideLoader();
+        }
+
+        function exportToCSV() {
+            let csv = "ID,Judul,Program,Modul,Kategori,PIC,Tanggal,Selesai,Status,Progress\r\n";
+            logsData.forEach(i => csv += `"${i.id}","${i.title}","${i.programName}","${i.moduleName}","${i.category}","${i.pic}","${i.date}","${i.completionDate||''}","${i.status}","${i.progress}"\r\n`);
+            const link = document.createElement("a");
+            link.href = encodeURI("data:text/csv;charset=utf-8," + csv);
+            link.download = "LogKerja_Export.csv";
+            link.click();
+        }
+
+        function exportToExcel() {
+            let html = `<table border="1"><tr><th>Judul</th><th>Program</th><th>Modul</th><th>Status</th></tr>` +
+                logsData.map(i => `<tr><td>${i.title}</td><td>${i.programName}</td><td>${i.moduleName}</td><td>${i.status}</td></tr>`).join('') + `</table>`;
+            const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = "LogKerja_Export.xls";
+            link.click();
+        }
+
+        function openLightbox(src) { document.getElementById('lightbox-img').src = src; document.getElementById('lightbox-modal').classList.remove('hidden'); }
+        function closeLightbox() { document.getElementById('lightbox-modal').classList.add('hidden'); }
+        async function handleLogout() { await window.firebaseModules.signOut(auth); location.href = '../index.html'; }
+        function escapeHtml(str) { return (str||'').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+    </script>
+</body>
+</html>

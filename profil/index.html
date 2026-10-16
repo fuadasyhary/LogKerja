@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil User &bull; LogKerja Pro</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%236366f1'/><text x='50%' y='53%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='900' font-size='42' fill='%23ffffff'>LOG</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-[#f8fafc] text-slate-800 font-sans antialiased min-h-screen flex flex-col pb-20 md:pb-0">
+
+    <!-- Global Loader -->
+    <div id="global-loader" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex flex-col items-center justify-center hidden">
+        <div class="bg-white p-6 rounded-3xl shadow-2xl flex flex-col items-center space-y-4 max-w-xs w-full mx-4 border border-slate-100 animate-pulse">
+            <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <div class="text-center">
+                <h4 id="loader-text" class="font-bold text-sm text-slate-800">Memproses Data...</h4>
+                <p class="text-[11px] text-slate-400 mt-0.5">Mohon tunggu sebentar</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK Imports -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInAnonymously, signOut, deleteUser, updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
+
+        window.firebaseModules = {
+            initializeApp, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInAnonymously, signOut, deleteUser, updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential, onAuthStateChanged,
+            getFirestore, doc, setDoc, getDoc, getAnalytics
+        };
+    </script>
+
+    <!-- Header Navigation -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-6">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-blue-200 font-black text-sm">
+                        LOG
+                    </div>
+                    <span class="font-bold text-base tracking-tight text-slate-900">Kerja</span>
+                </div>
+
+                <nav class="hidden md:flex items-center space-x-1">
+                    <button onclick="location.href='../dashboard/index.html'" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all">
+                        <i class="fa-solid fa-chart-pie text-xs"></i><span>Dashboard</span>
+                    </button>
+                    <button onclick="location.href='../kerjaan/index.html'" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all">
+                        <i class="fa-solid fa-list-check text-xs"></i><span>Daftar Kerjaan</span>
+                    </button>
+                    <button onclick="location.href='index.html'" class="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold flex items-center space-x-2 transition-all">
+                        <i class="fa-solid fa-user text-xs"></i><span>Profil User</span>
+                    </button>
+                </nav>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <button onclick="handleLogout()" class="w-9 h-9 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-600 rounded-xl flex items-center justify-center text-xs transition-all" title="Keluar">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Profil Content (Max-w-7xl Sama Seperti Daftar Kerjaan) -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-blue-600">Pengaturan Akun</span>
+            <h2 class="text-2xl font-black text-slate-900 tracking-tight mt-0.5">Profil Pengguna</h2>
+            <p id="profile-subtitle" class="text-xs text-slate-500 mt-1">Kelola informasi data pribadi, perusahaan, tim kerja, email, dan keamanan password Anda di sini.</p>
+        </div>
+
+        <div class="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-6">
+            <div class="p-4 bg-blue-50/60 rounded-2xl border border-blue-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 block mb-1"><i class="fa-solid fa-id-badge mr-1"></i> User ID / UID Akun</span>
+                    <code id="display-user-uid" class="text-xs font-mono font-bold text-slate-700 bg-white px-2.5 py-1 rounded-lg border border-blue-200 inline-block">Memuat UID...</code>
+                </div>
+                <button type="button" onclick="copyUserUid()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center space-x-1.5 self-start sm:self-center">
+                    <i class="fa-regular fa-copy"></i><span>Salin UID</span>
+                </button>
+            </div>
+
+            <form id="profile-form" onsubmit="handleProfileFormSubmit(event)" class="space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Nama Lengkap</label>
+                        <input type="text" id="profile-name" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Email Akun (Login)</label>
+                        <input type="email" id="profile-email" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Nama Perusahaan</label>
+                        <input type="text" id="profile-company" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Misal: PT Hartono Elektronik">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Tim Kerja (Bisa banyak orang, pisahkan dengan koma atau baris baru)</label>
+                        <input type="text" id="profile-team" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Misal: Pak Yahya, Bu Siti, Budi, Andi">
+                    </div>
+                </div>
+
+                <div class="p-5 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-4">
+                    <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center">
+                        <i class="fa-solid fa-key text-blue-600 mr-2"></i> Ubah Password (Opsional)
+                    </h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Password Baru</label>
+                            <input type="password" id="profile-new-password" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Password Saat Ini</label>
+                            <input type="password" id="profile-current-password" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Jabatan</label>
+                        <input type="text" id="profile-position" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Divisi</label>
+                        <input type="text" id="profile-division" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Jenis Kelamin</label>
+                        <select id="profile-gender" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                            <option value="Laki-laki">Laki-laki</option><option value="Perempuan">Perempuan</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Nomor Telepon / WhatsApp</label>
+                        <input type="text" id="profile-phone" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Alamat Kantor</label>
+                        <textarea id="profile-work-address" rows="2" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs"></textarea>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Alamat Tempat Tinggal (Rumah)</label>
+                    <textarea id="profile-home-address" rows="2" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs"></textarea>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <button type="button" onclick="handleDeleteAccount()" class="w-full sm:w-auto px-5 py-3 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-2xl text-xs font-bold transition-all flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-user-xmark"></i><span>Hapus Akun & Data</span>
+                    </button>
+                    <button type="submit" class="w-full sm:w-auto px-6 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-bold transition-all shadow-md shadow-blue-200">
+                        Simpan Perubahan Profil
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Mobile Bottom Nav -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40 flex items-center justify-around py-2 px-3 shadow-lg">
+        <button onclick="location.href='../dashboard/index.html'" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400">
+            <i class="fa-solid fa-chart-pie text-base mb-0.5"></i><span class="text-[10px] font-medium">Dashboard</span>
+        </button>
+        <button onclick="location.href='../kerjaan/index.html'" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400">
+            <i class="fa-solid fa-list-check text-base mb-0.5"></i><span class="text-[10px] font-medium">Daftar Kerja</span>
+        </button>
+        <button onclick="location.href='index.html'" class="flex flex-col items-center justify-center flex-1 py-1 text-blue-600">
+            <i class="fa-solid fa-user text-base mb-0.5"></i><span class="text-[10px] font-bold">Profil</span>
+        </button>
+    </nav>
+
+    <script>
+        let auth, db, currentUser = null;
+
+        window.addEventListener('DOMContentLoaded', () => { setTimeout(initProfile, 300); });
+
+        function showLoader(text="Memproses...") { document.getElementById('loader-text').textContent = text; document.getElementById('global-loader').classList.remove('hidden'); }
+        function hideLoader() { document.getElementById('global-loader').classList.add('hidden'); }
+
+        function initProfile() {
+            const firebaseConfig = {
+                apiKey: "AIzaSyDdHNw_tN_keSlNePxCib8M98dsxo00_Gg",
+                authDomain: "log-kerja.firebaseapp.com",
+                projectId: "log-kerja",
+                storageBucket: "log-kerja.firebasestorage.app",
+                messagingSenderId: "567064697097",
+                appId: "1:567064697097:web:9fab04051f05eaf8d45bd8",
+                measurementId: "G-7236830RH2"
+            };
+            const fm = window.firebaseModules;
+            const app = fm.initializeApp(firebaseConfig);
+            auth = fm.getAuth(app);
+            db = fm.getFirestore(app);
+
+            showLoader("Memuat Profil...");
+            fm.onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    currentUser = user;
+                    document.getElementById('display-user-uid').textContent = user.uid;
+                    document.getElementById('profile-email').value = user.email || '';
+                    await loadUserProfile(user.uid);
+                    hideLoader();
+                } else {
+                    window.location.href = '../index.html';
+                }
+            });
+        }
+
+        async function loadUserProfile(userId) {
+            const fm = window.firebaseModules;
+            try {
+                const docSnap = await fm.getDoc(fm.doc(db, 'users', userId, 'settings', 'profile'));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('profile-name').value = data.name || '';
+                    document.getElementById('profile-email').value = data.email || auth.currentUser.email || '';
+                    document.getElementById('profile-company').value = data.company || '';
+                    document.getElementById('profile-team').value = data.team || '';
+                    document.getElementById('profile-position').value = data.position || '';
+                    document.getElementById('profile-division').value = data.division || '';
+                    document.getElementById('profile-gender').value = data.gender || 'Laki-laki';
+                    document.getElementById('profile-phone').value = data.phone || '';
+                    document.getElementById('profile-work-address').value = data.workAddress || '';
+                    document.getElementById('profile-home-address').value = data.homeAddress || '';
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function copyUserUid() {
+            navigator.clipboard.writeText(document.getElementById('display-user-uid').textContent).then(() => alert('UID berhasil disalin!'));
+        }
+
+        async function handleProfileFormSubmit(e) {
+            e.preventDefault();
+            showLoader("Menyimpan Profil...");
+            const fm = window.firebaseModules;
+            const newEmail = document.getElementById('profile-email').value.trim();
+            const newPass = document.getElementById('profile-new-password').value;
+            const currPass = document.getElementById('profile-current-password').value;
+
+            try {
+                const userAuth = auth.currentUser;
+                if (userAuth && (newEmail !== userAuth.email || newPass)) {
+                    if (!currPass) { hideLoader(); alert("Masukkan Password Saat Ini untuk verifikasi."); return; }
+                    const cred = fm.EmailAuthProvider.credential(userAuth.email, currPass);
+                    await fm.reauthenticateWithCredential(userAuth, cred);
+                    if (newEmail !== userAuth.email) await fm.updateEmail(userAuth, newEmail);
+                    if (newPass) await fm.updatePassword(userAuth, newPass);
+                }
+
+                const payload = {
+                    name: document.getElementById('profile-name').value,
+                    email: newEmail,
+                    company: document.getElementById('profile-company').value,
+                    team: document.getElementById('profile-team').value,
+                    position: document.getElementById('profile-position').value,
+                    division: document.getElementById('profile-division').value,
+                    gender: document.getElementById('profile-gender').value,
+                    phone: document.getElementById('profile-phone').value,
+                    workAddress: document.getElementById('profile-work-address').value,
+                    homeAddress: document.getElementById('profile-home-address').value,
+                    updatedAt: new Date().toISOString()
+                };
+
+                await fm.setDoc(fm.doc(db, 'users', currentUser.uid, 'settings', 'profile'), payload, { merge: true });
+                document.getElementById('profile-new-password').value = '';
+                document.getElementById('profile-current-password').value = '';
+                hideLoader();
+                alert('Profil berhasil diperbarui!');
+            } catch (err) {
+                hideLoader();
+                alert('Gagal memperbarui profil: ' + err.message);
+            }
+        }
+
+        async function handleDeleteAccount() {
+            if (!confirm("Yakin ingin menghapus akun dan seluruh datanya secara permanen?")) return;
+            showLoader("Menghapus Akun...");
+            try {
+                await window.firebaseModules.deleteUser(auth.currentUser);
+                hideLoader();
+                location.href = '../index.html';
+            } catch(err) {
+                hideLoader();
+                alert('Gagal menghapus akun: ' + err.message);
+            }
+        }
+
+        async function handleLogout() { await window.firebaseModules.signOut(auth); location.href = '../index.html'; }
+    </script>
+</body>
+</html>
