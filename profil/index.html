@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profil User &bull; LogKerja Pro</title>
+    <title>Profil User &bull; LogKerja</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%236366f1'/><text x='50%' y='53%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='900' font-size='42' fill='%23ffffff'>LOG</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -207,17 +207,41 @@
             db = fm.getFirestore(app);
 
             showLoader("Memuat Profil...");
-            fm.onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    currentUser = user;
-                    document.getElementById('display-user-uid').textContent = user.uid;
-                    document.getElementById('profile-email').value = user.email || '';
-                    await loadUserProfile(user.uid);
-                    hideLoader();
-                } else {
-                    window.location.href = '../index.html';
-                }
-            });
+
+            const guestUid = localStorage.getItem('guest_target_uid');
+            if (guestUid) {
+                // Mode Tamu: Tampilkan UID tamu, muat profil, dan kunci form (read-only)
+                document.getElementById('display-user-uid').textContent = guestUid;
+                loadUserProfile(guestUid);
+                
+                // Ubah judul & deskripsi halaman agar jelas sedang mode tinjauan
+                document.getElementById('profile-subtitle').textContent = "Mode Peninjauan Tamu (Read-Only) • Data profil bersifat lihat saja.";
+                
+                // Nonaktifkan semua input form & sembunyikan tombol simpan/hapus akun
+                const formElements = document.querySelectorAll('#profile-form input, #profile-form select, #profile-form textarea');
+                formElements.forEach(el => el.disabled = true);
+
+                const saveBtn = document.querySelector('button[type="submit"]');
+                if (saveBtn) saveBtn.style.display = 'none';
+
+                const deleteBtn = document.querySelector('button[onclick="handleDeleteAccount()"]');
+                if (deleteBtn) deleteBtn.style.display = 'none';
+
+                hideLoader();
+            } else {
+                // Mode User Login Normal
+                fm.onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        currentUser = user;
+                        document.getElementById('display-user-uid').textContent = user.uid;
+                        document.getElementById('profile-email').value = user.email || '';
+                        await loadUserProfile(user.uid);
+                        hideLoader();
+                    } else {
+                        window.location.href = '../index.html';
+                    }
+                });
+            }
         }
 
         async function loadUserProfile(userId) {
@@ -300,7 +324,14 @@
             }
         }
 
-        async function handleLogout() { await window.firebaseModules.signOut(auth); location.href = '../index.html'; }
+        
+        // Perbarui fungsi handleLogout agar membersihkan status tamu:
+        async function handleLogout() {
+            localStorage.removeItem('guest_target_uid');
+            const fm = window.firebaseModules;
+            if (auth) await fm.signOut(auth);
+            window.location.href = '../index.html';
+        }
     </script>
 </body>
 </html>

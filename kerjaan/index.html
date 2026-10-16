@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar Kerjaan &bull; LogKerja Pro</title>
+    <title>Daftar Kerjaan &bull; LogKerja</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%236366f1'/><text x='50%' y='53%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='900' font-size='42' fill='%23ffffff'>LOG</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -344,17 +344,30 @@
             db = fm.getFirestore(app);
 
             const today = new Date().toISOString().split('T')[0];
-            ['log-date','log-completion-date','log-deadline'].forEach(id => document.getElementById(id).value = today);
+            ['log-date','log-completion-date','log-deadline'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.value = today;
+            });
 
             showLoader("Memuat Daftar Kerjaan...");
-            fm.onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    currentUser = user;
-                    setupRealtimeListeners(user.uid);
-                } else {
-                    window.location.href = '../index.html';
-                }
-            });
+
+            const guestUid = localStorage.getItem('guest_target_uid');
+            if (guestUid) {
+                // Mode Tamu: Muat data berdasarkan UID tamu & sembunyikan tombol tambah di header
+                setupRealtimeListeners(guestUid);
+                const btnAdd = document.querySelector('button[onclick="openLogModal()"]');
+                if (btnAdd) btnAdd.style.display = 'none';
+            } else {
+                // Mode User Login Normal
+                fm.onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        currentUser = user;
+                        setupRealtimeListeners(user.uid);
+                    } else {
+                        window.location.href = '../index.html';
+                    }
+                });
+            }
         }
 
         function setupRealtimeListeners(userId) {
@@ -387,6 +400,7 @@
             const sFilter = document.getElementById('table-filter-status').value;
             const cFilter = document.getElementById('table-filter-category').value;
             const pFilter = document.getElementById('table-filter-priority').value;
+            const isGuest = localStorage.getItem('guest_target_uid'); // Cek apakah mode tamu
 
             const filtered = logsData.filter(i => {
                 const matchSearch = !keyword || (i.title+i.programName+i.moduleName+i.description+i.pic).toLowerCase().includes(keyword);
@@ -411,6 +425,13 @@
             tbody.innerHTML = filtered.map(i => {
                 const d = new Date(i.date);
                 const badge = i.status==='Done'?'bg-emerald-50 text-emerald-700':i.status==='In Progress'?'bg-blue-50 text-blue-700':'bg-slate-100 text-slate-700';
+                
+                // Jika mode tamu, kolom aksi dikosongkan (tidak ada tombol edit/hapus)
+                const actionButtons = isGuest ? `<span class="text-[10px] text-slate-400 italic">Hanya Lihat</span>` : `
+                    <button onclick="openLogModal('${i.id}')" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600"><i class="fa-solid fa-pen text-[11px]"></i></button>
+                    <button onclick="deleteLog('${i.id}')" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-rose-50 hover:text-rose-600"><i class="fa-solid fa-trash text-[11px]"></i></button>
+                `;
+
                 return `
                     <tr onclick="viewDetail('${i.id}')" class="hover:bg-slate-50/80 cursor-pointer">
                         <td class="py-4 px-6 font-semibold">${d.getDate()} ${d.toLocaleString('id-ID',{month:'short'})} ${d.getFullYear()}</td>
@@ -421,8 +442,7 @@
                         <td class="py-4 px-4"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${badge}">${i.status}</span></td>
                         <td class="py-4 px-4 text-[11px]">Mulai: ${i.date}<br><span class="text-emerald-600">Selesai: ${i.completionDate||'-'}</span></td>
                         <td class="py-4 px-6 text-right space-x-1" onclick="event.stopPropagation()">
-                            <button onclick="openLogModal('${i.id}')" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600"><i class="fa-solid fa-pen text-[11px]"></i></button>
-                            <button onclick="deleteLog('${i.id}')" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-rose-50 hover:text-rose-600"><i class="fa-solid fa-trash text-[11px]"></i></button>
+                            ${actionButtons}
                         </td>
                     </tr>
                 `;
@@ -592,7 +612,14 @@
 
         function openLightbox(src) { document.getElementById('lightbox-img').src = src; document.getElementById('lightbox-modal').classList.remove('hidden'); }
         function closeLightbox() { document.getElementById('lightbox-modal').classList.add('hidden'); }
-        async function handleLogout() { await window.firebaseModules.signOut(auth); location.href = '../index.html'; }
+        
+        // Perbarui fungsi handleLogout agar membersihkan status tamu:
+        async function handleLogout() {
+            localStorage.removeItem('guest_target_uid');
+            const fm = window.firebaseModules;
+            if (auth) await fm.signOut(auth);
+            window.location.href = '../index.html';
+        }
         function escapeHtml(str) { return (str||'').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
     </script>
 </body>

@@ -11,7 +11,6 @@
 </head>
 <body class="bg-[#f8fafc] text-slate-800 font-sans antialiased min-h-screen flex items-center justify-center p-4">
 
-    <!-- Global Loader -->
     <div id="global-loader" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex flex-col items-center justify-center hidden">
         <div class="bg-white p-6 rounded-3xl shadow-2xl flex flex-col items-center space-y-4 max-w-xs w-full mx-4 border border-slate-100 animate-pulse">
             <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
@@ -22,20 +21,18 @@
         </div>
     </div>
 
-    <!-- Firebase SDK Imports -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
 
         window.firebaseModules = {
-            initializeApp, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInAnonymously, onAuthStateChanged,
+            initializeApp, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged,
             getFirestore, getAnalytics
         };
     </script>
 
-    <!-- Auth Card -->
     <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100">
         <div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-8 text-white text-center">
             <div class="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner">
@@ -49,7 +46,7 @@
             <div class="flex bg-slate-100 p-1 rounded-2xl mb-6">
                 <button id="tab-login" onclick="switchAuthTab('login')" class="flex-1 py-2 text-[11px] font-bold rounded-xl bg-white text-blue-600 shadow-sm transition-all">Masuk</button>
                 <button id="tab-register" onclick="switchAuthTab('register')" class="flex-1 py-2 text-[11px] font-bold rounded-xl text-slate-500 hover:text-slate-800 transition-all">Daftar</button>
-                <button id="tab-guest" onclick="switchAuthTab('guest')" class="flex-1 py-2 text-[11px] font-bold rounded-xl text-slate-500 hover:text-slate-800 transition-all">Tamu</button>
+                <button id="tab-guest" onclick="switchAuthTab('guest')" class="flex-1 py-2 text-[11px] font-bold rounded-xl text-slate-500 hover:text-slate-800 transition-all">Tamu (Lihat UID)</button>
             </div>
 
             <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4">
@@ -69,11 +66,12 @@
                 </div>
 
                 <div id="guest-wrapper" class="space-y-2 hidden">
-                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">ID User / UID</label>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Masukkan UID Pemilik Data</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400"><i class="fa-solid fa-user-shield text-xs"></i></span>
-                        <input type="text" id="guest-uid-input" class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" placeholder="Masukkan User UID...">
+                        <input type="text" id="guest-uid-input" class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white" placeholder="Contoh: sL5RCf7YwocczX... ">
                     </div>
+                    <p class="text-[10px] text-slate-400 mt-1 italic">*Mode Tamu khusus untuk melihat data saja (Read-Only) tanpa login akun.</p>
                 </div>
 
                 <div id="auth-error" class="text-rose-500 text-xs font-medium hidden"></div>
@@ -113,8 +111,7 @@
             showLoader("Memeriksa Sesi...");
             fm.onAuthStateChanged(auth, (user) => {
                 hideLoader();
-                if (user) {
-                    // Jika sudah login, arahkan ke dashboard
+                if (user && !localStorage.getItem('guest_target_uid')) {
                     window.location.href = 'dashboard/index.html';
                 }
             });
@@ -129,7 +126,7 @@
             document.getElementById('email-field-wrapper').style.display = mode === 'guest' ? 'none' : 'block';
             document.getElementById('password-wrapper').style.display = mode === 'guest' ? 'none' : 'block';
             document.getElementById('guest-wrapper').style.display = mode === 'guest' ? 'block' : 'none';
-            document.getElementById('auth-submit-btn').textContent = mode === 'login' ? 'Masuk ke Akun' : mode === 'register' ? 'Daftar Akun Baru' : 'Masuk sebagai Tamu';
+            document.getElementById('auth-submit-btn').textContent = mode === 'login' ? 'Masuk ke Akun' : mode === 'register' ? 'Daftar Akun Baru' : 'Masuk sebagai Tamu (Lihat Data)';
         }
 
         async function handleAuthSubmit(e) {
@@ -140,13 +137,15 @@
 
             if (currentAuthMode === 'guest') {
                 const uid = document.getElementById('guest-uid-input').value.trim();
-                if (!uid) { errEl.textContent = "Masukkan UID terlebih dahulu."; errEl.classList.remove('hidden'); return; }
-                showLoader("Masuk sebagai Tamu...");
-                await fm.signInAnonymously(auth);
+                if (!uid) { errEl.textContent = "Masukkan UID pemilik data terlebih dahulu."; errEl.classList.remove('hidden'); return; }
+                
+                // Simpan UID target ke localStorage tanpa perlu auth firebase
+                localStorage.setItem('guest_target_uid', uid);
                 window.location.href = 'dashboard/index.html';
                 return;
             }
 
+            localStorage.removeItem('guest_target_uid');
             const email = document.getElementById('auth-email').value.trim();
             const password = document.getElementById('auth-password').value;
 

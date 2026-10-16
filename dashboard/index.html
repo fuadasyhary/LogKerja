@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard &bull; LogKerja Pro</title>
+    <title>Dashboard &bull; LogKerja</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%236366f1'/><text x='50%' y='53%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='900' font-size='42' fill='%23ffffff'>LOG</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -307,18 +307,30 @@
             auth = fm.getAuth(app);
             db = fm.getFirestore(app);
 
-            showLoader("Memuat Dashboard...");
-            fm.onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    await loadUserProfile(user.uid);
-                    setupRealtimeListeners(user.uid);
-                } else {
-                    window.location.href = '../index.html';
-                }
-            });
+            // Munculkan loading awal secara konsisten
+            showLoader("Memuat Dashboard Tamu...");
+
+            const guestUid = localStorage.getItem('guest_target_uid');
+            if (guestUid) {
+                // Mode Tamu: Set sapaan khusus tamu, lalu muat data berdasarkan UID target
+                document.getElementById('dashboard-greeting').textContent = `Halo, Tamu (Mode Peninjauan)`;
+                setupRealtimeListeners(guestUid);
+                // Catatan: hideLoader() akan otomatis dipanggil di dalam fungsi setupRealtimeListeners setelah data selesai ditarik
+            } else {
+                // Mode User Login Normal
+                fm.onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        await loadUserProfile(user.uid);
+                        setupRealtimeListeners(user.uid);
+                    } else {
+                        window.location.href = '../index.html';
+                    }
+                });
+            }
         }
 
         async function loadUserProfile(userId) {
+            // Fungsi ini hanya dipanggil jika user login normal
             const fm = window.firebaseModules;
             try {
                 const docSnap = await fm.getDoc(fm.doc(db, 'users', userId, 'settings', 'profile'));
@@ -524,7 +536,13 @@
         function openLightbox(src) { document.getElementById('lightbox-img').src = src; document.getElementById('lightbox-modal').classList.remove('hidden'); }
         function closeLightbox() { document.getElementById('lightbox-modal').classList.add('hidden'); }
 
-        async function handleLogout() { const fm = window.firebaseModules; await fm.signOut(auth); location.href = '../index.html'; }
+        // Perbarui fungsi handleLogout agar membersihkan status tamu:
+        async function handleLogout() {
+            localStorage.removeItem('guest_target_uid');
+            const fm = window.firebaseModules;
+            if (auth) await fm.signOut(auth);
+            window.location.href = '../index.html';
+        }
         function escapeHtml(str) { return (str||'').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
     </script>
 </body>
