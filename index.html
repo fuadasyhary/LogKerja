@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Masuk &bull; LogKerja Pro</title>
+    <title>Masuk &bull; LogKerja</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%236366f1'/><text x='50%' y='53%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='900' font-size='42' fill='%23ffffff'>LOG</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -24,12 +24,12 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"; // <-- Tambahkan doc, getDoc di sini
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
 
         window.firebaseModules = {
             initializeApp, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged,
-            getFirestore, getAnalytics
+            getFirestore, doc, getDoc, getAnalytics // <-- Masukkan ke window.firebaseModules
         };
     </script>
 
@@ -38,7 +38,7 @@
             <div class="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner">
                 <i class="fa-solid fa-briefcase text-2xl"></i>
             </div>
-            <h1 class="text-2xl font-bold tracking-tight">LogKerja Pro</h1>
+            <h1 class="text-2xl font-bold tracking-tight">LogKerja</h1>
             <p class="text-blue-100 text-xs mt-1">Kelola Log Harian & Capai Target KPI Profesionalmu</p>
         </div>
         
@@ -137,11 +137,35 @@
 
             if (currentAuthMode === 'guest') {
                 const uid = document.getElementById('guest-uid-input').value.trim();
-                if (!uid) { errEl.textContent = "Masukkan UID pemilik data terlebih dahulu."; errEl.classList.remove('hidden'); return; }
+                if (!uid) { 
+                    errEl.textContent = "Masukkan UID pemilik data terlebih dahulu."; 
+                    errEl.classList.remove('hidden'); 
+                    return; 
+                }
                 
-                // Simpan UID target ke localStorage tanpa perlu auth firebase
-                localStorage.setItem('guest_target_uid', uid);
-                window.location.href = 'dashboard/index.html';
+                showLoader("Memeriksa UID...");
+                
+                try {
+                    const db = fm.getFirestore();
+                    // Gunakan fm.doc dan fm.getDoc yang sudah diimpor
+                    const docRef = fm.doc(db, 'users', uid, 'settings', 'profile');
+                    const docSnap = await fm.getDoc(docRef);
+                    
+                    if (!docSnap.exists()) {
+                        hideLoader();
+                        errEl.textContent = "UID tidak ditemukan! Pastikan UID yang Anda masukkan benar.";
+                        errEl.classList.remove('hidden');
+                        return;
+                    }
+
+                    // Jika UID valid, simpan ke localStorage dan masuk ke dashboard
+                    localStorage.setItem('guest_target_uid', uid);
+                    window.location.href = 'dashboard/index.html';
+                } catch (err) {
+                    hideLoader();
+                    errEl.textContent = "UID tidak ditemukan atau format salah.";
+                    errEl.classList.remove('hidden');
+                }
                 return;
             }
 

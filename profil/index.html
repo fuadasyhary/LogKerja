@@ -76,14 +76,35 @@
         </div>
 
         <div class="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-6">
-            <div class="p-4 bg-blue-50/60 rounded-2xl border border-blue-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 block mb-1"><i class="fa-solid fa-id-badge mr-1"></i> User ID / UID Akun</span>
-                    <code id="display-user-uid" class="text-xs font-mono font-bold text-slate-700 bg-white px-2.5 py-1 rounded-lg border border-blue-200 inline-block">Memuat UID...</code>
+            <!-- Grid Atas: User ID dan Ubah Password Berdampingan -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Kotak User ID / UID Akun -->
+                <div class="p-4 bg-blue-50/60 rounded-2xl border border-blue-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 h-full">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 block mb-1"><i class="fa-solid fa-id-badge mr-1"></i> User ID / UID Akun</span>
+                        <code id="display-user-uid" class="text-xs font-mono font-bold text-slate-700 bg-white px-2.5 py-1 rounded-lg border border-blue-200 inline-block">Memuat UID...</code>
+                    </div>
+                    <button type="button" onclick="copyUserUid()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center space-x-1.5 self-start sm:self-center">
+                        <i class="fa-regular fa-copy"></i><span>Salin UID</span>
+                    </button>
                 </div>
-                <button type="button" onclick="copyUserUid()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center space-x-1.5 self-start sm:self-center">
-                    <i class="fa-regular fa-copy"></i><span>Salin UID</span>
-                </button>
+
+                <!-- Kotak Ubah Password -->
+                <div class="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-3">
+                    <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center">
+                        <i class="fa-solid fa-key text-blue-600 mr-2"></i> Ubah Password (Opsional)
+                    </h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Password Baru</label>
+                            <input type="password" id="profile-new-password" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs" placeholder="Opsional">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Password Saat Ini</label>
+                            <input type="password" id="profile-current-password" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs" placeholder="••••••••">
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <form id="profile-form" onsubmit="handleProfileFormSubmit(event)" class="space-y-6">
@@ -106,22 +127,6 @@
                     <div>
                         <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Tim Kerja (Bisa banyak orang, pisahkan dengan koma atau baris baru)</label>
                         <input type="text" id="profile-team" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Misal: Pak Yahya, Bu Siti, Budi, Andi">
-                    </div>
-                </div>
-
-                <div class="p-5 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-4">
-                    <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center">
-                        <i class="fa-solid fa-key text-blue-600 mr-2"></i> Ubah Password (Opsional)
-                    </h4>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Password Baru</label>
-                            <input type="password" id="profile-new-password" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Password Saat Ini</label>
-                            <input type="password" id="profile-current-password" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs">
-                        </div>
                     </div>
                 </div>
 
@@ -169,6 +174,11 @@
             </form>
         </div>
     </main>
+
+    <!-- Footer Konsisten -->
+    <footer class="py-4 text-center text-xs text-slate-400 border-t border-slate-100 bg-white mt-auto mb-16 md:mb-0">
+        <p>&copy; 2026 LogKerja &bull; Copyright <span class="font-bold text-slate-600">@Mochamad Fuad Asyhary</span></p>
+    </footer>
 
     <!-- Mobile Bottom Nav -->
     <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40 flex items-center justify-around py-2 px-3 shadow-lg">
