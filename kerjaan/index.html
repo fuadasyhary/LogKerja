@@ -162,7 +162,7 @@
     <footer class="py-4 text-center text-xs text-slate-400 border-t border-slate-100 bg-white mt-auto mb-16 md:mb-0">
         <p>&copy; 2026 LogKerja &bull; Copyright <span class="font-bold text-slate-600">@Mochamad Fuad Asyhary</span></p>
     </footer>
-    
+
     <!-- Mobile Bottom Nav -->
     <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40 flex items-center justify-around py-2 px-3 shadow-lg">
         <button onclick="location.href='../dashboard/index.html'" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400">
@@ -287,7 +287,7 @@
         </div>
     </div>
 
-    <!-- Modal Detail Log Kerja -->
+    <!-- Modal Detail Log Kerja (Tunggal) -->
     <div id="detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden overflow-y-auto">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-100 my-8">
             <div class="p-6 border-b flex items-center justify-between bg-gradient-to-r from-slate-50 to-blue-50/30">
@@ -297,23 +297,68 @@
                 </div>
                 <button onclick="closeDetailModal()" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-500 flex items-center justify-center"><i class="fa-solid fa-xmark text-xs"></i></button>
             </div>
-            <div class="p-6 space-y-6 text-xs max-h-[70vh] overflow-y-auto">
-                <div class="grid grid-cols-2 gap-4 p-4 bg-blue-50/40 rounded-2xl">
-                    <div><span class="text-[10px] font-bold text-blue-600 block">Program</span><span id="detail-program-name" class="font-bold font-mono"></span></div>
-                    <div><span class="text-[10px] font-bold text-blue-600 block">Modul</span><span id="detail-module-name" class="font-bold"></span></div>
+            
+            <div class="p-6 space-y-5 text-xs max-h-[70vh] overflow-y-auto">
+                <!-- Kotak Program & Modul -->
+                <div class="grid grid-cols-2 gap-4 p-4 bg-blue-50/40 rounded-2xl border border-blue-100/60">
+                    <div><span class="text-[10px] font-bold text-blue-600 block uppercase">Program</span><span id="detail-program-name" class="font-bold font-mono text-slate-800"></span></div>
+                    <div><span class="text-[10px] font-bold text-blue-600 block uppercase">Modul</span><span id="detail-module-name" class="font-bold text-slate-800"></span></div>
                 </div>
-                <div class="grid grid-cols-4 gap-4 p-4 bg-slate-50 rounded-2xl">
-                    <div><span class="text-[10px] font-bold text-slate-400 block">Kategori</span><span id="detail-category" class="font-bold"></span></div>
-                    <div><span class="text-[10px] font-bold text-slate-400 block">PIC</span><span id="detail-pic" class="font-bold"></span></div>
-                    <div><span class="text-[10px] font-bold text-slate-400 block">Prioritas</span><span id="detail-priority" class="font-bold"></span></div>
-                    <div><span class="text-[10px] font-bold text-slate-400 block">Status</span><span id="detail-status" class="font-bold"></span></div>
+
+                <!-- Kotak Kategori, PIC, Prioritas, Status -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div><span class="text-[10px] font-bold text-slate-400 block uppercase mb-1">Kategori</span><span id="detail-category" class="font-bold text-slate-700"></span></div>
+                    <div><span class="text-[10px] font-bold text-slate-400 block uppercase mb-1">PIC</span><span id="detail-pic" class="font-bold text-slate-700"></span></div>
+                    <div><span class="text-[10px] font-bold text-slate-400 block uppercase mb-1">Prioritas</span><div id="detail-priority" class="font-bold"></div></div>
+                    <div><span class="text-[10px] font-bold text-slate-400 block uppercase mb-1">Status</span><div id="detail-status" class="font-bold"></div></div>
                 </div>
-                <div><span class="text-[11px] font-bold text-slate-400 block mb-1">Deskripsi</span><p id="detail-description" class="text-slate-600 bg-slate-50 p-4 rounded-2xl leading-relaxed"></p></div>
-                <div><span class="text-[11px] font-bold text-blue-600 block mb-2">Gambar Requirement</span><div id="detail-req-images" class="flex flex-wrap gap-2.5"></div></div>
-                <div><span class="text-[11px] font-bold text-emerald-600 block mb-2">Gambar Testing</span><div id="detail-test-images" class="flex flex-wrap gap-2.5"></div></div>
+
+                <!-- Kotak Tanggal Mulai, Selesai, Deadline, Progress -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div>
+                        <span class="text-[10px] font-bold text-slate-400 block uppercase mb-1">Tanggal Mulai</span>
+                        <span id="detail-date" class="font-bold text-slate-700"></span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-bold text-emerald-600 block uppercase mb-1">Selesai</span>
+                        <span id="detail-completion-date" class="font-bold text-emerald-700"></span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-bold text-slate-400 block uppercase mb-1">Deadline</span>
+                        <span id="detail-deadline" class="font-bold text-slate-700"></span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-bold text-blue-600 block uppercase mb-1">Progress</span>
+                        <div class="flex items-center space-x-1.5 mt-0.5">
+                            <div class="w-12 bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                                <div id="detail-progress-bar" class="bg-blue-600 h-1.5 rounded-full" style="width: 0%"></div>
+                            </div>
+                            <span id="detail-progress" class="font-bold text-blue-700 text-[11px]"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Deskripsi -->
+                <div>
+                    <span class="text-[11px] font-bold text-slate-400 block mb-1">Deskripsi</span>
+                    <p id="detail-description" class="text-slate-600 bg-slate-50 p-4 rounded-2xl leading-relaxed border border-slate-100"></p>
+                </div>
+
+                <!-- Gambar Requirement -->
+                <div>
+                    <span class="text-[11px] font-bold text-blue-600 block mb-2">Gambar Requirement</span>
+                    <div id="detail-req-images" class="flex flex-wrap gap-2.5"></div>
+                </div>
+
+                <!-- Gambar Testing -->
+                <div>
+                    <span class="text-[11px] font-bold text-emerald-600 block mb-2">Gambar Testing</span>
+                    <div id="detail-test-images" class="flex flex-wrap gap-2.5"></div>
+                </div>
             </div>
-            <div class="p-4 bg-slate-50 border-t text-right">
-                <button onclick="closeDetailModal()" class="px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-xs shadow-md">Tutup</button>
+
+            <div class="p-4 bg-slate-50 border-t border-slate-100 text-right">
+                <button onclick="closeDetailModal()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-md transition-all">Tutup</button>
             </div>
         </div>
     </div>
@@ -544,19 +589,67 @@
         function viewDetail(id) {
             const item = logsData.find(l => l.id === id);
             if (!item) return;
+
             document.getElementById('detail-title').textContent = item.title;
             document.getElementById('detail-program-name').textContent = item.programName || '-';
             document.getElementById('detail-module-name').textContent = item.moduleName || '-';
             document.getElementById('detail-category').textContent = item.category || '-';
             document.getElementById('detail-pic').textContent = item.pic || '-';
             document.getElementById('detail-description').textContent = item.description || 'Tidak ada deskripsi.';
-            document.getElementById('detail-priority').textContent = item.priority || 'Medium';
-            document.getElementById('detail-status').textContent = item.status;
 
-            document.getElementById('detail-req-images').innerHTML = (item.requirements || []).map(img => `<div class="w-20 h-20 rounded-xl overflow-hidden border cursor-pointer"><img src="${img}" class="w-full h-full object-cover" onclick="openLightbox('${img}')"></div>`).join('') || '<span class="text-slate-400 italic">Tidak ada</span>';
-            document.getElementById('detail-test-images').innerHTML = (item.testing || []).map(img => `<div class="w-20 h-20 rounded-xl overflow-hidden border cursor-pointer"><img src="${img}" class="w-full h-full object-cover" onclick="openLightbox('${img}')"></div>`).join('') || '<span class="text-slate-400 italic">Tidak ada</span>';
+            // Render Prioritas Badge
+            const priEl = document.getElementById('detail-priority');
+            priEl.textContent = item.priority || 'Medium';
+            priEl.className = 'inline-block px-2.5 py-1 rounded-lg text-[10px] font-bold ' + 
+                (item.priority === 'High' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-blue-50 text-blue-700 border border-blue-200');
+
+            // Render Status Badge & Dot
+            const stEl = document.getElementById('detail-status');
+            let dotClass = 'bg-slate-500';
+            let badgeStyle = 'bg-slate-100 text-slate-700';
+            if (item.status === 'Done') { badgeStyle = 'bg-emerald-50 text-emerald-700'; dotClass = 'bg-emerald-500'; }
+            else if (item.status === 'In Progress') { badgeStyle = 'bg-blue-50 text-blue-700'; dotClass = 'bg-blue-500'; }
+            else if (item.status === 'Pending / Hold') { badgeStyle = 'bg-amber-50 text-amber-700'; dotClass = 'bg-amber-500'; }
+            else if (item.status === 'Cancelled') { badgeStyle = 'bg-rose-50 text-rose-700'; dotClass = 'bg-rose-500'; }
+
+            stEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full ${dotClass} inline-block mr-1.5"></span>${item.status}`;
+            stEl.className = `inline-block px-2.5 py-1 rounded-full text-[10px] font-bold ${badgeStyle}`;
+
+            // Render Tanggal & Progress
+            let prog = item.progress !== undefined ? item.progress : 100;
+            document.getElementById('detail-date').textContent = item.date || '-';
+            document.getElementById('detail-completion-date').textContent = item.completionDate || '-';
+            document.getElementById('detail-deadline').textContent = item.deadline || '-';
+            document.getElementById('detail-progress').textContent = `${prog}%`;
+            document.getElementById('detail-progress-bar').style.width = `${prog}%`;
+
+            // Render Gambar Requirement
+            const reqContainer = document.getElementById('detail-req-images');
+            if (item.requirements && item.requirements.length > 0) {
+                reqContainer.innerHTML = item.requirements.map(img => `
+                    <div class="w-20 h-20 rounded-xl overflow-hidden border border-slate-200 shadow-sm cursor-pointer hover:scale-105 transition-transform bg-slate-50">
+                        <img src="${img}" class="w-full h-full object-cover" onclick="openLightbox('${img}')">
+                    </div>
+                `).join('');
+            } else {
+                reqContainer.innerHTML = `<span class="text-slate-400 italic text-xs">Tidak ada gambar requirement.</span>`;
+            }
+
+            // Render Gambar Testing
+            const testContainer = document.getElementById('detail-test-images');
+            if (item.testing && item.testing.length > 0) {
+                testContainer.innerHTML = item.testing.map(img => `
+                    <div class="w-20 h-20 rounded-xl overflow-hidden border border-slate-200 shadow-sm cursor-pointer hover:scale-105 transition-transform bg-slate-50">
+                        <img src="${img}" class="w-full h-full object-cover" onclick="openLightbox('${img}')">
+                    </div>
+                `).join('');
+            } else {
+                testContainer.innerHTML = `<span class="text-slate-400 italic text-xs">Tidak ada gambar testing.</span>`;
+            }
+
             document.getElementById('detail-modal').classList.remove('hidden');
         }
+
         function closeDetailModal() { document.getElementById('detail-modal').classList.add('hidden'); }
 
         async function handleLogFormSubmit(e) {
