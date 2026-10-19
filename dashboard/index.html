@@ -23,16 +23,21 @@
         </div>
     </div>
 
-    <!-- Firebase SDK Imports -->
+    <!-- Firebase SDK Imports yang dioptimalkan dengan Cache Lokal -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, getDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
+        import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, getDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         window.firebaseModules = {
             initializeApp, getAuth, onAuthStateChanged, signOut,
-            getFirestore, collection, doc, getDoc, onSnapshot, query, getAnalytics
+            // Inisialisasi Firestore dengan Persistent Cache agar tidak loading terus menerus
+            getFirestore: (app) => initializeFirestore(app, {
+                localCache: persistentLocalCache({
+                    tabManager: persistentMultipleTabManager()
+                })
+            }),
+            collection, doc, getDoc, onSnapshot, query
         };
     </script>
 
@@ -169,19 +174,23 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
-                <h3 class="font-bold text-slate-900 text-sm mb-4">Kerjaan per Modul</h3>
-                <div class="h-64 relative">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-bold text-slate-900 text-sm mb-4">Kerjaan per Modul</h3>
+                    <button onclick="location.href='../kerjaan/index.html'" class="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors">Lihat Daftar <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                </div>
+                <div class="h-72 relative">
                     <canvas id="categoryChart"></canvas>
                 </div>
             </div>
 
+            <!-- Diubah dari Kerjaan Terbaru menjadi Grafik Kerjaan per Kategori -->
             <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="font-bold text-slate-900 text-sm">Kerjaan Terbaru</h3>
-                    <button onclick="location.href='../kerjaan/index.html'" class="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors">Lihat semua <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                    <h3 class="font-bold text-slate-900 text-sm">Kerjaan per Kategori</h3>
+                    <button onclick="location.href='../kerjaan/index.html'" class="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors">Lihat Daftar <i class="fa-solid fa-arrow-right ml-1"></i></button>
                 </div>
-                <div id="recent-logs-list" class="space-y-3.5 flex-1 overflow-y-auto max-h-[240px]">
-                    <p class="text-xs text-slate-400 py-8 text-center">Memuat data...</p>
+                <div class="h-72 relative">
+                    <canvas id="categoryTypeChart"></canvas>
                 </div>
             </div>
         </div>
@@ -330,7 +339,7 @@
 
     <script>
         let auth, db, logsData = [], userDisplayName = "User";
-        let monthlyChartInstance, distributionChartInstance, categoryChartInstance;
+        let monthlyChartInstance, distributionChartInstance, categoryChartInstance, categoryTypeChartInstance;
 
         window.addEventListener('DOMContentLoaded', () => {
             setTimeout(initDashboard, 300);
@@ -397,11 +406,21 @@
 
         function setupRealtimeListeners(userId) {
             const fm = window.firebaseModules;
+            
+            // Sembunyikan global loader segera jika cache lokal sudah siap
+            hideLoader(); 
+
             fm.onSnapshot(fm.query(fm.collection(db, 'users', userId, 'work_logs')), (snapshot) => {
                 logsData = [];
                 snapshot.forEach(doc => logsData.push({ id: doc.id, ...doc.data() }));
+                
+                // Simpan ringkasan ke sessionStorage agar tab lain bisa langsung baca instan
+                sessionStorage.setItem('cached_logs_count', logsData.length);
+
                 updateYearDropdown();
                 renderDashboardData();
+            }, (error) => {
+                console.error("Error loading snapshot:", error);
                 hideLoader();
             });
         }
@@ -530,10 +549,10 @@
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
 
-            // 3. Chart Kerjaan per Modul (Menggunakan variabel 'filtered' yang sesuai dengan filter aktif)
+            // 3. Chart Kerjaan per Modul
             const cats = {};
             filtered.forEach(i => { 
-                const c = i.moduleName || i.category || 'Lainnya'; 
+                const c = i.moduleName || 'Lainnya'; 
                 cats[c] = (cats[c] || 0) + 1; 
             });
 
@@ -549,8 +568,46 @@
                     responsive: true, 
                     maintainAspectRatio: false, 
                     scales: { 
-                        x: { grid: { color: '#f1f5f9' } }, 
-                        y: { grid: { display: false } } 
+                        x: { 
+                            grid: { color: '#f1f5f9' },
+                            ticks: { precision: 0, stepSize: 1 } // <--- Menghilangkan desimal & pastikan kelipatan 1
+                        }, 
+                        y: { 
+                            grid: { display: false },
+                            ticks: { font: { size: 11, weight: '600' } }
+                        } 
+                    }, 
+                    plugins: { legend: { display: false } } 
+                }
+            });
+
+            // 4. Chart Kerjaan per Kategori
+            const typeCats = {};
+            filtered.forEach(i => {
+                const t = i.category || 'Lainnya';
+                typeCats[t] = (typeCats[t] || 0) + 1;
+            });
+
+            if (categoryTypeChartInstance) categoryTypeChartInstance.destroy();
+            categoryTypeChartInstance = new Chart(document.getElementById('categoryTypeChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(typeCats).length ? Object.keys(typeCats) : ['Kosong'],
+                    datasets: [{ data: Object.values(typeCats).length ? Object.values(typeCats) : [0], backgroundColor: '#10b981', borderRadius: 4, barThickness: 20 }]
+                },
+                options: { 
+                    indexAxis: 'y', 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { 
+                        x: { 
+                            grid: { color: '#f1f5f9' },
+                            ticks: { precision: 0, stepSize: 1 } // <--- Menghilangkan desimal & pastikan kelipatan 1
+                        }, 
+                        y: { 
+                            grid: { display: false },
+                            ticks: { font: { size: 11, weight: '600' } }
+                        } 
                     }, 
                     plugins: { legend: { display: false } } 
                 }

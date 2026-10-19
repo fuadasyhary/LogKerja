@@ -22,16 +22,21 @@
         </div>
     </div>
 
-    <!-- Firebase SDK Imports -->
+    <!-- Firebase SDK Imports yang dioptimalkan dengan Cache Lokal -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
+        import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, getDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         window.firebaseModules = {
             initializeApp, getAuth, onAuthStateChanged, signOut,
-            getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, query, getAnalytics
+            // Inisialisasi Firestore dengan Persistent Cache agar tidak loading terus menerus
+            getFirestore: (app) => initializeFirestore(app, {
+                localCache: persistentLocalCache({
+                    tabManager: persistentMultipleTabManager()
+                })
+            }),
+            collection, doc, getDoc, onSnapshot, query
         };
     </script>
 
@@ -431,11 +436,17 @@
 
         function setupRealtimeListeners(userId) {
             const fm = window.firebaseModules;
+            
+            // Langsung matikan loader agar halaman terasa tanpa jeda (instant load)
+            hideLoader();
+
             fm.onSnapshot(fm.query(fm.collection(db, 'users', userId, 'work_logs')), (snapshot) => {
                 logsData = [];
                 snapshot.forEach(doc => logsData.push({ id: doc.id, ...doc.data() }));
                 updateYearDropdown();
                 renderLogsTable();
+            }, (error) => {
+                console.error("Error loading logs:", error);
                 hideLoader();
             });
         }
