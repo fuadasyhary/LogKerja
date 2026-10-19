@@ -21,7 +21,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Firebase SDK Imports yang dioptimalkan dengan Cache Lokal -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -52,10 +52,10 @@
                 </div>
 
                 <nav class="hidden md:flex items-center space-x-1">
-                    <button onclick="location.href='../dashboard/index.html'" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all">
+                    <button onclick="location.href='../dashboard/'" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all">
                         <i class="fa-solid fa-chart-pie text-xs"></i><span>Dashboard</span>
                     </button>
-                    <button onclick="location.href='../kerjaan/index.html'" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all">
+                    <button onclick="location.href='../kerjaan/'" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all">
                         <i class="fa-solid fa-list-check text-xs"></i><span>Daftar Kerjaan</span>
                     </button>
                     <button onclick="location.href='index.html'" class="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold flex items-center space-x-2 transition-all">
@@ -187,10 +187,10 @@
 
     <!-- Mobile Bottom Nav -->
     <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40 flex items-center justify-around py-2 px-3 shadow-lg">
-        <button onclick="location.href='../dashboard/index.html'" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400">
+        <button onclick="location.href='../dashboard/'" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400">
             <i class="fa-solid fa-chart-pie text-base mb-0.5"></i><span class="text-[10px] font-medium">Dashboard</span>
         </button>
-        <button onclick="location.href='../kerjaan/index.html'" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400">
+        <button onclick="location.href='../kerjaan/'" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400">
             <i class="fa-solid fa-list-check text-base mb-0.5"></i><span class="text-[10px] font-medium">Daftar Kerja</span>
         </button>
         <button onclick="location.href='index.html'" class="flex flex-col items-center justify-center flex-1 py-1 text-blue-600">
@@ -253,7 +253,7 @@
                         await loadUserProfile(user.uid);
                         hideLoader();
                     } else {
-                        window.location.href = '../index.html';
+                        window.location.href = '../';
                     }
                 });
             }
@@ -332,7 +332,7 @@
             try {
                 await window.firebaseModules.deleteUser(auth.currentUser);
                 hideLoader();
-                location.href = '../index.html';
+                location.href = '../';
             } catch(err) {
                 hideLoader();
                 alert('Gagal menghapus akun: ' + err.message);
@@ -345,7 +345,7 @@
             localStorage.removeItem('guest_target_uid');
             const fm = window.firebaseModules;
             if (auth) await fm.signOut(auth);
-            window.location.href = '../index.html';
+            window.location.href = '../';
         }
     </script>
 </body>

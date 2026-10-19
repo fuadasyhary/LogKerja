@@ -56,10 +56,10 @@
                     <button onclick="location.href='index.html'" class="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold flex items-center space-x-2 transition-all">
                         <i class="fa-solid fa-chart-pie text-xs"></i><span>Dashboard</span>
                     </button>
-                    <button onclick="location.href='../kerjaan/index.html'" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all">
+                    <button onclick="location.href='../kerjaan/'" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all">
                         <i class="fa-solid fa-list-check text-xs"></i><span>Daftar Kerjaan</span>
                     </button>
-                    <button onclick="location.href='../profil/index.html'" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all">
+                    <button onclick="location.href='../profil/'" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all">
                         <i class="fa-solid fa-user text-xs"></i><span>Profil User</span>
                     </button>
                 </nav>
@@ -176,7 +176,7 @@
             <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="font-bold text-slate-900 text-sm mb-4">Kerjaan per Modul</h3>
-                    <button onclick="location.href='../kerjaan/index.html'" class="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors">Lihat Daftar <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                    <button onclick="location.href='../kerjaan/'" class="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors">Lihat Daftar <i class="fa-solid fa-arrow-right ml-1"></i></button>
                 </div>
                 <div class="h-72 relative">
                     <canvas id="categoryChart"></canvas>
@@ -187,7 +187,7 @@
             <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="font-bold text-slate-900 text-sm">Kerjaan per Kategori</h3>
-                    <button onclick="location.href='../kerjaan/index.html'" class="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors">Lihat Daftar <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                    <button onclick="location.href='../kerjaan/'" class="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors">Lihat Daftar <i class="fa-solid fa-arrow-right ml-1"></i></button>
                 </div>
                 <div class="h-72 relative">
                     <canvas id="categoryTypeChart"></canvas>
@@ -206,10 +206,10 @@
         <button onclick="location.href='index.html'" class="flex flex-col items-center justify-center flex-1 py-1 text-blue-600">
             <i class="fa-solid fa-chart-pie text-base mb-0.5"></i><span class="text-[10px] font-bold">Dashboard</span>
         </button>
-        <button onclick="location.href='../kerjaan/index.html'" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400">
+        <button onclick="location.href='../kerjaan/'" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400">
             <i class="fa-solid fa-list-check text-base mb-0.5"></i><span class="text-[10px] font-medium">Daftar Kerja</span>
         </button>
-        <button onclick="location.href='../profil/index.html'" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400">
+        <button onclick="location.href='../profil/'" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400">
             <i class="fa-solid fa-user text-base mb-0.5"></i><span class="text-[10px] font-medium">Profil</span>
         </button>
     </nav>
@@ -382,7 +382,7 @@
                         await loadUserProfile(user.uid);
                         setupRealtimeListeners(user.uid);
                     } else {
-                        window.location.href = '../index.html';
+                        window.location.href = '../';
                     }
                 });
             }
@@ -773,7 +773,7 @@
             localStorage.removeItem('guest_target_uid');
             const fm = window.firebaseModules;
             if (auth) await fm.signOut(auth);
-            window.location.href = '../index.html';
+            window.location.href = '../';
         }
         function escapeHtml(str) { return (str||'').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
     </script>
