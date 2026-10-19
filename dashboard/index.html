@@ -458,32 +458,57 @@
         }
 
         function renderCharts(filtered, year) {
+            const selectedMonth = document.getElementById('filter-month').value;
+            
+            // 1. Logika khusus untuk Chart Bulanan (Status Kerja per Bulan)
+            let monthsToDisplay = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
+            let monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+
+            if (selectedMonth) {
+                monthsToDisplay = [selectedMonth];
+                const monthIndex = parseInt(selectedMonth, 10) - 1;
+                monthLabels = [monthLabels[monthIndex]];
+            }
+
             const mCounts = {};
-            for(let i=1; i<=12; i++) mCounts[String(i).padStart(2,'0')] = { Done:0, 'In Progress':0, 'To Do':0, 'Pending / Hold':0, Cancelled:0 };
+            monthsToDisplay.forEach(m => {
+                mCounts[m] = { Done: 0, 'In Progress': 0, 'To Do': 0, 'Pending / Hold': 0, Cancelled: 0 };
+            });
+
             filtered.forEach(i => {
                 if (i.date) {
                     const [y, m] = i.date.split('-');
-                    if ((!year || y === year) && mCounts[m]) mCounts[m][i.status || 'To Do']++;
+                    if ((!year || y === year) && mCounts[m]) {
+                        mCounts[m][i.status || 'To Do']++;
+                    }
                 }
             });
-            const mKeys = Object.keys(mCounts);
 
             if (monthlyChartInstance) monthlyChartInstance.destroy();
             monthlyChartInstance = new Chart(document.getElementById('monthlyStatusChart').getContext('2d'), {
                 type: 'bar',
                 data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
+                    labels: monthLabels,
                     datasets: [
-                        { label: 'Done', data: mKeys.map(m=>mCounts[m].Done), backgroundColor: '#10b981', borderRadius: 4 },
-                        { label: 'In Progress', data: mKeys.map(m=>mCounts[m]['In Progress']), backgroundColor: '#3b82f6', borderRadius: 4 },
-                        { label: 'To Do', data: mKeys.map(m=>mCounts[m]['To Do']), backgroundColor: '#64748b', borderRadius: 4 },
-                        { label: 'Pending', data: mKeys.map(m=>mCounts[m]['Pending / Hold']), backgroundColor: '#f59e0b', borderRadius: 4 },
-                        { label: 'Cancelled', data: mKeys.map(m=>mCounts[m].Cancelled), backgroundColor: '#ef4444', borderRadius: 4 }
+                        { label: 'Done', data: monthsToDisplay.map(m => mCounts[m].Done), backgroundColor: '#10b981', borderRadius: 4 },
+                        { label: 'In Progress', data: monthsToDisplay.map(m => mCounts[m]['In Progress']), backgroundColor: '#3b82f6', borderRadius: 4 },
+                        { label: 'To Do', data: monthsToDisplay.map(m => mCounts[m]['To Do']), backgroundColor: '#64748b', borderRadius: 4 },
+                        { label: 'Pending', data: monthsToDisplay.map(m => mCounts[m]['Pending / Hold']), backgroundColor: '#f59e0b', borderRadius: 4 },
+                        { label: 'Cancelled', data: monthsToDisplay.map(m => mCounts[m].Cancelled), backgroundColor: '#ef4444', borderRadius: 4 }
                     ]
                 },
-                options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, grid: { color: '#f1f5f9' } } }, plugins: { legend: { display: false } } }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { 
+                        x: { stacked: true, grid: { display: false } }, 
+                        y: { stacked: true, grid: { color: '#f1f5f9' } } 
+                    }, 
+                    plugins: { legend: { display: false } } 
+                }
             });
 
+            // 2. Chart Distribusi Status (Menggunakan variabel 'filtered' agar ikut merespons filter tahun/bulan dengan benar)
             if (distributionChartInstance) distributionChartInstance.destroy();
             distributionChartInstance = new Chart(document.getElementById('statusDistributionChart').getContext('2d'), {
                 type: 'doughnut',
@@ -491,21 +516,27 @@
                     labels: ['To Do', 'In Progress', 'Done', 'Pending', 'Cancelled'],
                     datasets: [{
                         data: [
-                            filtered.filter(i=>i.status==='To Do').length,
-                            filtered.filter(i=>i.status==='In Progress').length,
-                            filtered.filter(i=>i.status==='Done').length,
-                            filtered.filter(i=>i.status==='Pending / Hold').length,
-                            filtered.filter(i=>i.status==='Cancelled').length
+                            filtered.filter(i => i.status === 'To Do').length,
+                            filtered.filter(i => i.status === 'In Progress').length,
+                            filtered.filter(i => i.status === 'Done').length,
+                            filtered.filter(i => i.status === 'Pending / Hold').length,
+                            filtered.filter(i => i.status === 'Cancelled').length
                         ],
                         backgroundColor: ['#64748b', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'],
-                        borderWidth: 0, cutout: '75%'
+                        borderWidth: 0, 
+                        cutout: '75%'
                     }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
 
+            // 3. Chart Kerjaan per Modul (Menggunakan variabel 'filtered' yang sesuai dengan filter aktif)
             const cats = {};
-            filtered.forEach(i => { const c = i.moduleName || i.category || 'Lainnya'; cats[c] = (cats[c] || 0) + 1; });
+            filtered.forEach(i => { 
+                const c = i.moduleName || i.category || 'Lainnya'; 
+                cats[c] = (cats[c] || 0) + 1; 
+            });
+
             if (categoryChartInstance) categoryChartInstance.destroy();
             categoryChartInstance = new Chart(document.getElementById('categoryChart').getContext('2d'), {
                 type: 'bar',
@@ -513,7 +544,16 @@
                     labels: Object.keys(cats).length ? Object.keys(cats) : ['Kosong'],
                     datasets: [{ data: Object.values(cats).length ? Object.values(cats) : [0], backgroundColor: '#3b82f6', borderRadius: 4, barThickness: 20 }]
                 },
-                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { grid: { color: '#f1f5f9' } }, y: { grid: { display: false } } }, plugins: { legend: { display: false } } }
+                options: { 
+                    indexAxis: 'y', 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { 
+                        x: { grid: { color: '#f1f5f9' } }, 
+                        y: { grid: { display: false } } 
+                    }, 
+                    plugins: { legend: { display: false } } 
+                }
             });
         }
 
