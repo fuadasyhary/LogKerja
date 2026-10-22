@@ -94,7 +94,9 @@
         </div>
 
         <!-- Metric Cards Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+
+            <!-- Kartu Total Kerjaan -->
             <div onclick="showDashboardPopup('total')" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between cursor-pointer hover:border-blue-400 hover:shadow-md transition-all group">
                 <div class="flex items-center justify-between">
                     <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-blue-600 transition-colors">Total Kerjaan</span>
@@ -106,6 +108,7 @@
                 </div>
             </div>
 
+            <!-- Kartu Selesai -->
             <div onclick="showDashboardPopup('done')" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between cursor-pointer hover:border-emerald-400 hover:shadow-md transition-all group">
                 <div class="flex items-center justify-between">
                     <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-emerald-600 transition-colors">Selesai</span>
@@ -116,7 +119,20 @@
                     <p id="stat-cancelled" class="text-xs text-slate-400 mt-1">0 dibatalkan</p>
                 </div>
             </div>
+            
+            <!-- TAMBAHAN KARTU: TO DO -->
+            <div onclick="showDashboardPopup('todo')" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between cursor-pointer hover:border-slate-400 hover:shadow-md transition-all group">
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-slate-600 transition-colors">To Do</span>
+                    <i class="fa-solid fa-list text-slate-400 text-sm group-hover:text-slate-600"></i>
+                </div>
+                <div class="mt-4">
+                    <h3 id="stat-todo-jobs" class="text-3xl font-extrabold text-slate-700">0</h3>
+                    <p class="text-xs text-slate-400 mt-1">Belum dimulai</p>
+                </div>
+            </div>
 
+            <!-- Kartu Sedang Berjalan -->
             <div onclick="showDashboardPopup('inprogress')" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between cursor-pointer hover:border-blue-400 hover:shadow-md transition-all group">
                 <div class="flex items-center justify-between">
                     <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-blue-600 transition-colors">Sedang Berjalan</span>
@@ -128,6 +144,19 @@
                 </div>
             </div>
 
+            <!-- Kartu Lewat Deadline -->
+            <div onclick="showDashboardPopup('overdue')" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between cursor-pointer hover:border-rose-400 hover:shadow-md transition-all group">
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-rose-600 transition-colors">Lewat Deadline</span>
+                    <i class="fa-solid fa-triangle-exclamation text-rose-500 text-sm"></i>
+                </div>
+                <div class="mt-4">
+                    <h3 id="stat-overdue" class="text-3xl font-extrabold text-rose-600">0</h3>
+                    <p class="text-xs text-slate-400 mt-1">Belum selesai & melewati target</p>
+                </div>
+            </div>
+
+            <!-- Kartu Tingkat Penyelesaian -->
             <div onclick="showDashboardPopup('completion')" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between cursor-pointer hover:border-indigo-400 hover:shadow-md transition-all group">
                 <div class="flex items-center justify-between">
                     <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-indigo-600 transition-colors">Tingkat Penyelesaian</span>
@@ -139,17 +168,6 @@
                         <div id="rate-progress-bar" class="bg-blue-600 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
                     </div>
                     <p id="stat-avg-progress" class="text-[11px] text-slate-400">Rata-rata progress 0%</p>
-                </div>
-            </div>
-
-            <div onclick="showDashboardPopup('overdue')" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between cursor-pointer hover:border-rose-400 hover:shadow-md transition-all group">
-                <div class="flex items-center justify-between">
-                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-rose-600 transition-colors">Lewat Deadline</span>
-                    <i class="fa-solid fa-triangle-exclamation text-rose-500 text-sm"></i>
-                </div>
-                <div class="mt-4">
-                    <h3 id="stat-overdue" class="text-3xl font-extrabold text-rose-600">0</h3>
-                    <p class="text-xs text-slate-400 mt-1">Belum selesai & melewati target</p>
                 </div>
             </div>
         </div>
@@ -440,7 +458,7 @@
             const total = filtered.length;
             const done = filtered.filter(i => i.status === 'Done').length;
             const inProgress = filtered.filter(i => i.status === 'In Progress').length;
-            const todo = filtered.filter(i => i.status === 'To Do').length;
+            const todo = filtered.filter(i => i.status === 'To Do').length; // <-- Tambahan variabel To Do
             const pending = filtered.filter(i => i.status === 'Pending / Hold').length;
             const cancelled = filtered.filter(i => i.status === 'Cancelled').length;
             const unstarted = todo + pending;
@@ -450,6 +468,8 @@
             const rate = total > 0 ? ((done / total)*100).toFixed(1) : 0;
             const avgProg = total > 0 ? (filtered.reduce((a,c) => a + Number(c.progress || 0), 0) / total).toFixed(1) : 0;
 
+            // Masukkan nilai ke elemen HTML
+            document.getElementById('stat-todo-jobs').textContent = todo; // <-- Update teks To Do
             document.getElementById('stat-total-jobs').textContent = total;
             document.getElementById('stat-unstarted').textContent = `${unstarted} belum dimulai`;
             document.getElementById('stat-completed-jobs').textContent = done;
@@ -695,7 +715,8 @@
 
             let subset = filtered;
             const todayStr = new Date().toISOString().split('T')[0];
-            if (type === 'done') subset = filtered.filter(i => i.status === 'Done');
+            if (type === 'todo') subset = filtered.filter(i => i.status === 'To Do'); // <-- Tambahan kondisi popup To Do
+            else if (type === 'done') subset = filtered.filter(i => i.status === 'Done');
             else if (type === 'inprogress') subset = filtered.filter(i => i.status === 'In Progress');
             else if (type === 'completion') subset = filtered.filter(i => i.status === 'Done');
             else if (type === 'overdue') subset = filtered.filter(i => i.deadline && i.deadline < todayStr && i.status !== 'Done' && i.status !== 'Cancelled');
