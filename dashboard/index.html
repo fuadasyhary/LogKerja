@@ -27,7 +27,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, getDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, getDoc, onSnapshot, query, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         window.firebaseModules = {
             initializeApp, getAuth, onAuthStateChanged, signOut,
@@ -36,7 +36,7 @@
                     tabManager: persistentMultipleTabManager()
                 })
             }),
-            collection, doc, getDoc, onSnapshot, query
+            collection, doc, getDoc, onSnapshot, query, updateDoc, deleteDoc
         };
     </script>
 
@@ -95,8 +95,6 @@
 
         <!-- Metric Cards Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
-
-            <!-- Kartu Total Kerjaan -->
             <div onclick="showDashboardPopup('total')" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between cursor-pointer hover:border-blue-400 hover:shadow-md transition-all group">
                 <div class="flex items-center justify-between">
                     <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-blue-600 transition-colors">Total Kerjaan</span>
@@ -108,7 +106,6 @@
                 </div>
             </div>
 
-            <!-- Kartu Selesai -->
             <div onclick="showDashboardPopup('done')" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between cursor-pointer hover:border-emerald-400 hover:shadow-md transition-all group">
                 <div class="flex items-center justify-between">
                     <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-emerald-600 transition-colors">Selesai</span>
@@ -120,7 +117,6 @@
                 </div>
             </div>
             
-            <!-- TAMBAHAN KARTU: TO DO -->
             <div onclick="showDashboardPopup('todo')" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between cursor-pointer hover:border-slate-400 hover:shadow-md transition-all group">
                 <div class="flex items-center justify-between">
                     <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-slate-600 transition-colors">To Do</span>
@@ -132,7 +128,6 @@
                 </div>
             </div>
 
-            <!-- Kartu Sedang Berjalan -->
             <div onclick="showDashboardPopup('inprogress')" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between cursor-pointer hover:border-blue-400 hover:shadow-md transition-all group">
                 <div class="flex items-center justify-between">
                     <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-blue-600 transition-colors">Sedang Berjalan</span>
@@ -144,7 +139,6 @@
                 </div>
             </div>
 
-            <!-- Kartu Lewat Deadline -->
             <div onclick="showDashboardPopup('overdue')" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between cursor-pointer hover:border-rose-400 hover:shadow-md transition-all group">
                 <div class="flex items-center justify-between">
                     <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-rose-600 transition-colors">Lewat Deadline</span>
@@ -156,7 +150,6 @@
                 </div>
             </div>
 
-            <!-- Kartu Tingkat Penyelesaian -->
             <div onclick="showDashboardPopup('completion')" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between cursor-pointer hover:border-indigo-400 hover:shadow-md transition-all group">
                 <div class="flex items-center justify-between">
                     <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-indigo-600 transition-colors">Tingkat Penyelesaian</span>
@@ -238,7 +231,7 @@
 
     <!-- Dashboard List Popup Modal -->
     <div id="dashboard-list-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden overflow-y-auto">
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden border border-slate-100 my-8">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-5xl overflow-hidden border border-slate-100 my-8">
             <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 to-blue-50/30">
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center font-bold">
@@ -265,6 +258,7 @@
                                     <th class="py-3 px-4">Prioritas</th>
                                     <th class="py-3 px-4">Progress</th>
                                     <th class="py-3 px-4">Status</th>
+                                    <th class="py-3 px-6 text-right">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="dash-modal-table-body" class="divide-y divide-slate-100 text-xs"></tbody>
@@ -342,9 +336,134 @@
                 </div>
             </div>
 
-            <div class="p-4 bg-slate-50 border-t border-slate-100 text-right">
+            <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                <button id="detail-edit-btn" onclick="" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs shadow-md transition-all flex items-center space-x-2">
+                    <i class="fa-solid fa-pen text-[11px]"></i><span>Edit Kerjaan</span>
+                </button>
                 <button onclick="closeDetailModal()" class="px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-xs shadow-md">Tutup</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal Form Edit Kerjaan Lengkap dengan Tombol Lihat & Hapus Gambar -->
+    <div id="log-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden overflow-y-auto">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-100 my-8">
+            <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <h3 class="font-bold text-base text-slate-900">Edit Log Kerjaan</h3>
+                <button onclick="closeLogModal()" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-500 flex items-center justify-center"><i class="fa-solid fa-xmark text-xs"></i></button>
+            </div>
+            <form id="log-form" onsubmit="handleLogFormSubmit(event)" class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+                <input type="hidden" id="log-id">
+                <div>
+                    <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Judul Tugas / Pekerjaan</label>
+                    <input type="text" id="log-title" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Nama Program</label>
+                        <input type="text" id="log-program-name" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Modul Program</label>
+                        <select id="log-module-name" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="FICO SAP">FICO SAP</option><option value="MM SAP">MM SAP</option><option value="SD SAP">SD SAP</option><option value="PP SAP">PP SAP</option>
+                            <option value="BW SAP">BW SAP</option><option value="BMS">BMS</option><option value="AMS">AMS</option><option value="FMS">FMS</option>
+                            <option value="GAMS">GAMS</option><option value="HRMS">HRMS</option><option value="HLS">HLS</option><option value="RSS">RSS</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Kategori / Proyek</label>
+                        <select id="log-category" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="Report ABAP">Report ABAP</option>
+                            <option value="Form ABAP">Form ABAP</option>
+                            <option value="Enhancement ABAP">Enhancement ABAP</option>
+                            <option value="Userexit ABAP">Userexit ABAP</option>
+                            <option value="Query BW">Query BW</option>
+                            <option value="Analyzer BW">Analyzer BW</option>
+                            <option value="Program ABAP BW">Program ABAP BW</option>
+                            <option value="Interface WSDL Endpoint">Interface WSDL Endpoint</option>
+                            <option value="Interface WSDL Consume">Interface WSDL Consume</option>
+                            <option value="Interface RestAPI Endpoint">Interface RestAPI Endpoint</option>
+                            <option value="Interface RestAPI Consume">Interface RestAPI Consume</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">PIC</label>
+                        <input type="text" id="log-pic" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Tanggal Mulai</label>
+                        <input type="date" id="log-date" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Tanggal Selesai</label>
+                        <input type="date" id="log-completion-date" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Deadline</label>
+                        <input type="date" id="log-deadline" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Prioritas</label>
+                        <select id="log-priority" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                            <option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Status</label>
+                        <select id="log-status" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                            <option value="Done">Done</option><option value="In Progress">In Progress</option><option value="To Do">To Do</option><option value="Pending / Hold">Pending / Hold</option><option value="Cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-2">
+                    <div class="flex justify-between items-center text-xs font-bold uppercase text-blue-600">
+                        <span id="progress-label-text">PROGRESS — 0%</span>
+                    </div>
+                    <input type="range" min="0" max="100" value="0" id="log-progress" oninput="updateProgressLabel(this.value)" class="w-full accent-blue-600">
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Deskripsi Detail</label>
+                    <textarea id="log-description" rows="3" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs"></textarea>
+                </div>
+
+                <!-- Bagian Upload & Preview Gambar Requirement -->
+                <div class="border-t border-slate-100 pt-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-xs font-bold uppercase text-blue-600">Gambar Requirement</label>
+                        <span id="req-count-label" class="text-xs text-slate-400">0 Dipilih</span>
+                    </div>
+                    <input type="file" id="req-file-input" accept="image/*" multiple onchange="handleImageUpload('requirement')" class="w-full text-xs text-slate-500">
+                    <div id="req-preview-container" class="flex flex-wrap gap-2.5 mt-3"></div>
+                </div>
+
+                <!-- Bagian Upload & Preview Gambar Testing -->
+                <div class="border-t border-slate-100 pt-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-xs font-bold uppercase text-emerald-600">Gambar Testing</label>
+                        <span id="test-count-label" class="text-xs text-slate-400">0 Dipilih</span>
+                    </div>
+                    <input type="file" id="test-file-input" accept="image/*" multiple onchange="handleImageUpload('testing')" class="w-full text-xs text-slate-500">
+                    <div id="test-preview-container" class="flex flex-wrap gap-2.5 mt-3"></div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-end space-x-3">
+                    <button type="button" onclick="closeLogModal()" class="px-5 py-3 bg-slate-100 text-slate-600 rounded-2xl text-xs font-bold">Batal</button>
+                    <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-2xl text-xs font-bold shadow-md shadow-blue-200">Simpan Perubahan</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -354,7 +473,8 @@
     </div>
 
     <script>
-        let auth, db, logsData = [], userDisplayName = "User";
+        let auth, db, currentUserId = null, logsData = [], userDisplayName = "User";
+        let currentRequirementImages = [], currentTestingImages = [];
         let monthlyChartInstance, distributionChartInstance, categoryChartInstance, categoryTypeChartInstance;
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -366,6 +486,7 @@
             document.getElementById('global-loader').classList.remove('hidden');
         }
         function hideLoader() { document.getElementById('global-loader').classList.add('hidden'); }
+        function updateProgressLabel(val) { document.getElementById('progress-label-text').textContent = `PROGRESS — ${val}%`; }
 
         function initDashboard() {
             const firebaseConfig = {
@@ -386,11 +507,13 @@
 
             const guestUid = localStorage.getItem('guest_target_uid');
             if (guestUid) {
+                currentUserId = guestUid;
                 document.getElementById('dashboard-greeting').textContent = `Halo, Tamu (Mode Peninjauan)`;
                 setupRealtimeListeners(guestUid);
             } else {
                 fm.onAuthStateChanged(auth, async (user) => {
                     if (user) {
+                        currentUserId = user.uid;
                         await loadUserProfile(user.uid);
                         setupRealtimeListeners(user.uid);
                     } else {
@@ -458,7 +581,7 @@
             const total = filtered.length;
             const done = filtered.filter(i => i.status === 'Done').length;
             const inProgress = filtered.filter(i => i.status === 'In Progress').length;
-            const todo = filtered.filter(i => i.status === 'To Do').length; // <-- Tambahan variabel To Do
+            const todo = filtered.filter(i => i.status === 'To Do').length;
             const pending = filtered.filter(i => i.status === 'Pending / Hold').length;
             const cancelled = filtered.filter(i => i.status === 'Cancelled').length;
             const unstarted = todo + pending;
@@ -468,8 +591,7 @@
             const rate = total > 0 ? ((done / total)*100).toFixed(1) : 0;
             const avgProg = total > 0 ? (filtered.reduce((a,c) => a + Number(c.progress || 0), 0) / total).toFixed(1) : 0;
 
-            // Masukkan nilai ke elemen HTML
-            document.getElementById('stat-todo-jobs').textContent = todo; // <-- Update teks To Do
+            document.getElementById('stat-todo-jobs').textContent = todo;
             document.getElementById('stat-total-jobs').textContent = total;
             document.getElementById('stat-unstarted').textContent = `${unstarted} belum dimulai`;
             document.getElementById('stat-completed-jobs').textContent = done;
@@ -653,9 +775,10 @@
         function openCustomDashboardPopup(titleText, subset) {
             document.getElementById('dash-modal-title').textContent = `${titleText} (${subset.length} data)`;
             const tbody = document.getElementById('dash-modal-table-body');
+            const isGuest = localStorage.getItem('guest_target_uid');
             
             if (subset.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400">Tidak ada data.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400">Tidak ada data.</td></tr>`;
             } else {
                 tbody.innerHTML = subset.map(i => {
                     let badgeClass = 'bg-slate-100 text-slate-600';
@@ -665,12 +788,16 @@
                     else if (i.status === 'Pending / Hold') { badgeClass = 'bg-amber-50 text-amber-700'; dotClass = 'bg-amber-500'; }
                     else if (i.status === 'Cancelled') { badgeClass = 'bg-rose-50 text-rose-700'; dotClass = 'bg-rose-500'; }
 
-                    // Warna Prioritas: High (Merah), Medium (Kuning), Low (Hijau)
                     let priorityClass = 'bg-amber-50 text-amber-700 border border-amber-200';
                     if (i.priority === 'High') priorityClass = 'bg-rose-50 text-rose-700 border border-rose-200';
                     else if (i.priority === 'Low') priorityClass = 'bg-emerald-50 text-emerald-700 border border-emerald-200';
 
                     let prog = i.progress !== undefined ? i.progress : 100;
+
+                    const actionButtons = isGuest ? `<span class="text-[10px] text-slate-400 italic">Hanya Lihat</span>` : `
+                        <button onclick="event.stopPropagation(); openEditModal('${i.id}')" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 transition-colors" title="Edit"><i class="fa-solid fa-pen text-[11px]"></i></button>
+                        <button onclick="event.stopPropagation(); deleteLogFromDashboard('${i.id}')" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-rose-50 hover:text-rose-600 transition-colors" title="Hapus"><i class="fa-solid fa-trash text-[11px]"></i></button>
+                    `;
 
                     return `
                         <tr onclick="closeDashboardPopup(); viewDetail('${i.id}')" class="hover:bg-slate-50/80 cursor-pointer transition-colors">
@@ -695,6 +822,9 @@
                                 <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${badgeClass} inline-flex items-center">
                                     <span class="w-1.5 h-1.5 rounded-full ${dotClass} mr-1.5"></span> ${i.status}
                                 </span>
+                            </td>
+                            <td class="py-3 px-6 text-right space-x-1">
+                                ${actionButtons}
                             </td>
                         </tr>
                     `;
@@ -715,62 +845,13 @@
 
             let subset = filtered;
             const todayStr = new Date().toISOString().split('T')[0];
-            if (type === 'todo') subset = filtered.filter(i => i.status === 'To Do'); // <-- Tambahan kondisi popup To Do
+            if (type === 'todo') subset = filtered.filter(i => i.status === 'To Do');
             else if (type === 'done') subset = filtered.filter(i => i.status === 'Done');
             else if (type === 'inprogress') subset = filtered.filter(i => i.status === 'In Progress');
             else if (type === 'completion') subset = filtered.filter(i => i.status === 'Done');
             else if (type === 'overdue') subset = filtered.filter(i => i.deadline && i.deadline < todayStr && i.status !== 'Done' && i.status !== 'Cancelled');
             
-            document.getElementById('dash-modal-title').textContent = `Rincian (${subset.length} data)`;
-            
-            const tbody = document.getElementById('dash-modal-table-body');
-            if (subset.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400">Tidak ada data.</td></tr>`;
-            } else {
-                tbody.innerHTML = subset.map(i => {
-                    let badgeClass = 'bg-slate-100 text-slate-600';
-                    let dotClass = 'bg-slate-500';
-                    if (i.status === 'Done') { badgeClass = 'bg-emerald-50 text-emerald-700'; dotClass = 'bg-emerald-500'; }
-                    else if (i.status === 'In Progress') { badgeClass = 'bg-blue-50 text-blue-700'; dotClass = 'bg-blue-500'; }
-                    else if (i.status === 'Pending / Hold') { badgeClass = 'bg-amber-50 text-amber-700'; dotClass = 'bg-amber-500'; }
-                    else if (i.status === 'Cancelled') { badgeClass = 'bg-rose-50 text-rose-700'; dotClass = 'bg-rose-500'; }
-
-                    let priorityClass = 'bg-amber-50 text-amber-700 border border-amber-200';
-                    if (i.priority === 'High') priorityClass = 'bg-rose-50 text-rose-700 border border-rose-200';
-                    else if (i.priority === 'Low') priorityClass = 'bg-emerald-50 text-emerald-700 border border-emerald-200';
-
-                    let prog = i.progress !== undefined ? i.progress : 100;
-
-                    return `
-                        <tr onclick="closeDashboardPopup(); viewDetail('${i.id}')" class="hover:bg-slate-50/80 cursor-pointer transition-colors">
-                            <td class="py-3 px-4 font-semibold text-slate-700">${i.date}</td>
-                            <td class="py-3 px-4">
-                                <div class="font-bold text-slate-900">${escapeHtml(i.title)}</div>
-                                <div class="text-[10px] text-blue-600 font-mono mt-0.5">${escapeHtml(i.programName||'-')} | ${escapeHtml(i.moduleName||i.category||'-')}</div>
-                            </td>
-                            <td class="py-3 px-4 font-medium text-slate-600">${escapeHtml(i.pic||'-')}</td>
-                            <td class="py-3 px-4">
-                                <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold ${priorityClass}">${i.priority||'Medium'}</span>
-                            </td>
-                            <td class="py-3 px-4">
-                                <div class="flex items-center space-x-2">
-                                    <div class="w-20 bg-slate-200 rounded-full h-1.5 overflow-hidden">
-                                        <div class="bg-blue-600 h-1.5 rounded-full" style="width: ${prog}%"></div>
-                                    </div>
-                                    <span class="text-[11px] font-bold text-slate-600">${prog}%</span>
-                                </div>
-                            </td>
-                            <td class="py-3 px-4">
-                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${badgeClass} inline-flex items-center">
-                                    <span class="w-1.5 h-1.5 rounded-full ${dotClass} mr-1.5"></span> ${i.status}
-                                </span>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-            }
-
-            document.getElementById('dashboard-list-modal').classList.remove('hidden');
+            openCustomDashboardPopup(`Rincian Kerjaan`, subset);
         }
 
         function closeDashboardPopup() { document.getElementById('dashboard-list-modal').classList.add('hidden'); }
@@ -778,6 +859,11 @@
         function viewDetail(id) {
             const item = logsData.find(l => l.id === id);
             if (!item) return;
+
+            const editBtn = document.getElementById('detail-edit-btn');
+            if (editBtn) {
+                editBtn.setAttribute('onclick', `closeDetailModal(); openEditModal('${id}')`);
+            }
 
             document.getElementById('detail-title').textContent = item.title;
             document.getElementById('detail-program-name').textContent = item.programName || '-';
@@ -839,6 +925,140 @@
         function closeDetailModal() { document.getElementById('detail-modal').classList.add('hidden'); }
         function openLightbox(src) { document.getElementById('lightbox-img').src = src; document.getElementById('lightbox-modal').classList.remove('hidden'); }
         function closeLightbox() { document.getElementById('lightbox-modal').classList.add('hidden'); }
+
+        async function processAndCompressImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = e => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width, h = img.height;
+                        if (w > h && w > 900) { h = Math.round((h * 900) / w); w = 900; }
+                        else if (h > 900) { w = Math.round((w * 900) / h); h = 900; }
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        let q = 0.7, url = canvas.toDataURL('image/jpeg', q);
+                        while ((url.length * 0.75 / 1024) > 200 && q > 0.1) { q -= 0.1; url = canvas.toDataURL('image/jpeg', q); }
+                        resolve(url);
+                    };
+                };
+            });
+        }
+
+        async function handleImageUpload(type) {
+            showLoader("Mengompres Gambar...");
+            const inputId = type === 'requirement' ? 'req-file-input' : 'test-file-input';
+            const files = document.getElementById(inputId).files;
+            const target = type === 'requirement' ? currentRequirementImages : currentTestingImages;
+            for (let f of files) target.push(await processAndCompressImage(f));
+            renderImagePreviews(type);
+            document.getElementById(inputId).value = '';
+            hideLoader();
+        }
+
+        function renderImagePreviews(type) {
+            const container = document.getElementById(type === 'requirement' ? 'req-preview-container' : 'test-preview-container');
+            const arr = type === 'requirement' ? currentRequirementImages : currentTestingImages;
+            document.getElementById(type === 'requirement' ? 'req-count-label' : 'test-count-label').textContent = `${arr.length} Dipilih`;
+            container.innerHTML = arr.map((img, idx) => `
+                <div class="relative w-20 h-20 rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-slate-50 group">
+                    <img src="${img}" class="w-full h-full object-cover">
+                    <!-- Tombol Aksi Hover (Lihat & Hapus) -->
+                    <div class="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 flex items-center justify-center space-x-2 transition-opacity">
+                        <button type="button" onclick="openLightbox('${img}')" class="w-7 h-7 bg-blue-600 text-white rounded-lg flex items-center justify-center hover:bg-blue-700 transition-colors" title="Lihat Gambar">
+                            <i class="fa-solid fa-eye text-[11px]"></i>
+                        </button>
+                        <button type="button" onclick="removeImage('${type}', ${idx})" class="w-7 h-7 bg-rose-600 text-white rounded-lg flex items-center justify-center hover:bg-rose-700 transition-colors" title="Hapus Gambar">
+                            <i class="fa-solid fa-trash text-[11px]"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function removeImage(type, idx) {
+            if (type === 'requirement') { currentRequirementImages.splice(idx, 1); renderImagePreviews('requirement'); }
+            else { currentTestingImages.splice(idx, 1); renderImagePreviews('testing'); }
+        }
+
+        function openEditModal(id) {
+            const item = logsData.find(l => l.id === id);
+            if (!item) return;
+
+            document.getElementById('log-id').value = item.id;
+            document.getElementById('log-title').value = item.title;
+            document.getElementById('log-program-name').value = item.programName || '';
+            document.getElementById('log-module-name').value = item.moduleName || 'FICO SAP';
+            document.getElementById('log-category').value = item.category || 'Report ABAP';
+            document.getElementById('log-pic').value = item.pic || '';
+            document.getElementById('log-date').value = item.date;
+            document.getElementById('log-completion-date').value = item.completionDate || '';
+            document.getElementById('log-deadline').value = item.deadline || item.date;
+            document.getElementById('log-priority').value = item.priority || 'Medium';
+            document.getElementById('log-status').value = item.status;
+            document.getElementById('log-progress').value = item.progress !== undefined ? item.progress : 100;
+            updateProgressLabel(item.progress !== undefined ? item.progress : 100);
+            document.getElementById('log-description').value = item.description || '';
+
+            currentRequirementImages = [...(item.requirements || [])];
+            currentTestingImages = [...(item.testing || [])];
+            renderImagePreviews('requirement');
+            renderImagePreviews('testing');
+
+            document.getElementById('log-modal').classList.remove('hidden');
+        }
+
+        function closeLogModal() { document.getElementById('log-modal').classList.add('hidden'); }
+
+        async function handleLogFormSubmit(e) {
+            e.preventDefault();
+            showLoader("Menyimpan Perubahan...");
+            const fm = window.firebaseModules;
+            const id = document.getElementById('log-id').value;
+            const payload = {
+                title: document.getElementById('log-title').value,
+                programName: document.getElementById('log-program-name').value,
+                moduleName: document.getElementById('log-module-name').value,
+                category: document.getElementById('log-category').value,
+                pic: document.getElementById('log-pic').value,
+                date: document.getElementById('log-date').value,
+                completionDate: document.getElementById('log-completion-date').value,
+                deadline: document.getElementById('log-deadline').value,
+                priority: document.getElementById('log-priority').value,
+                status: document.getElementById('log-status').value,
+                progress: parseInt(document.getElementById('log-progress').value),
+                description: document.getElementById('log-description').value,
+                requirements: currentRequirementImages,
+                testing: currentTestingImages,
+                updatedAt: new Date().toISOString()
+            };
+            try {
+                await fm.updateDoc(fm.doc(db, 'users', currentUserId, 'work_logs', id), payload);
+                hideLoader(); 
+                closeLogModal();
+            } catch(err) { 
+                hideLoader(); 
+                alert('Gagal menyimpan: ' + err.message); 
+            }
+        }
+
+        async function deleteLogFromDashboard(id) {
+            if (!confirm('Hapus data kerjaan ini?')) return;
+            showLoader("Menghapus...");
+            const fm = window.firebaseModules;
+            try {
+                await fm.deleteDoc(fm.doc(db, 'users', currentUserId, 'work_logs', id));
+                hideLoader();
+                closeDetailModal();
+                closeDashboardPopup();
+            } catch(err) {
+                hideLoader();
+                alert('Gagal menghapus: ' + err.message);
+            }
+        }
 
         async function handleLogout() {
             localStorage.removeItem('guest_target_uid');

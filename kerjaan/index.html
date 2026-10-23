@@ -147,6 +147,7 @@
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-slate-50/80 border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                            <th class="py-3.5 px-4 text-center w-12">No</th>
                             <th class="py-3.5 px-6">Tanggal</th>
                             <th class="py-3.5 px-4">Judul & Program / Modul</th>
                             <th class="py-3.5 px-4">PIC</th>
@@ -158,7 +159,7 @@
                         </tr>
                     </thead>
                     <tbody id="logs-table-body" class="divide-y divide-slate-100 text-xs">
-                        <tr><td colspan="8" class="py-12 text-center text-slate-400">Memuat data...</td></tr>
+                        <tr><td colspan="9" class="py-12 text-center text-slate-400">Memuat data...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -286,7 +287,7 @@
                         <span id="req-count-label" class="text-xs text-slate-400">0 Dipilih</span>
                     </div>
                     <input type="file" id="req-file-input" accept="image/*" multiple onchange="handleImageUpload('requirement')" class="w-full text-xs text-slate-500">
-                    <div id="req-preview-container" class="flex flex-wrap gap-2 mt-3"></div>
+                    <div id="req-preview-container" class="flex flex-wrap gap-2.5 mt-3"></div>
                 </div>
 
                 <div class="border-t border-slate-100 pt-4">
@@ -295,7 +296,7 @@
                         <span id="test-count-label" class="text-xs text-slate-400">0 Dipilih</span>
                     </div>
                     <input type="file" id="test-file-input" accept="image/*" multiple onchange="handleImageUpload('testing')" class="w-full text-xs text-slate-500">
-                    <div id="test-preview-container" class="flex flex-wrap gap-2 mt-3"></div>
+                    <div id="test-preview-container" class="flex flex-wrap gap-2.5 mt-3"></div>
                 </div>
 
                 <div class="pt-4 border-t border-slate-100 flex items-center justify-end space-x-3">
@@ -370,8 +371,12 @@
                 </div>
             </div>
 
-            <div class="p-4 bg-slate-50 border-t border-slate-100 text-right">
-                <button onclick="closeDetailModal()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-md transition-all">Tutup</button>
+            <!-- Tombol Edit & Tutup di Modal Detail (Tombol Edit otomatis disembunyikan dalam mode tamu) -->
+            <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                <button id="detail-edit-btn" onclick="" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs shadow-md transition-all hidden items-center space-x-2">
+                    <i class="fa-solid fa-pen text-[11px]"></i><span>Edit Kerjaan</span>
+                </button>
+                <button onclick="closeDetailModal()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-md transition-all ml-auto">Tutup</button>
             </div>
         </div>
     </div>
@@ -483,26 +488,30 @@
             document.getElementById('total-logs-found-label').textContent = `${filtered.length} data ditemukan`;
 
             if (!filtered.length) {
-                tbody.innerHTML = `<tr><td colspan="8" class="py-12 text-center text-slate-400">Tidak ada data ditemukan.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="py-12 text-center text-slate-400">Tidak ada data ditemukan.</td></tr>`;
                 return;
             }
 
-            tbody.innerHTML = filtered.map(i => {
+            const totalData = filtered.length;
+
+            tbody.innerHTML = filtered.map((i, index) => {
                 const d = new Date(i.date);
                 const badge = i.status==='Done'?'bg-emerald-50 text-emerald-700':i.status==='In Progress'?'bg-blue-50 text-blue-700':'bg-slate-100 text-slate-700';
                 
-                // Warna Badge Prioritas: High (Merah), Medium (Kuning), Low (Hijau)
                 let priorityClass = 'bg-amber-50 text-amber-700 border border-amber-200';
                 if (i.priority === 'High') priorityClass = 'bg-rose-50 text-rose-700 border border-rose-200';
                 else if (i.priority === 'Low') priorityClass = 'bg-emerald-50 text-emerald-700 border border-emerald-200';
 
                 const actionButtons = isGuest ? `<span class="text-[10px] text-slate-400 italic">Hanya Lihat</span>` : `
-                    <button onclick="openLogModal('${i.id}')" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600"><i class="fa-solid fa-pen text-[11px]"></i></button>
-                    <button onclick="deleteLog('${i.id}')" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-rose-50 hover:text-rose-600"><i class="fa-solid fa-trash text-[11px]"></i></button>
+                    <button onclick="openLogModal('${i.id}')" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600" title="Edit"><i class="fa-solid fa-pen text-[11px]"></i></button>
+                    <button onclick="deleteLog('${i.id}')" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-rose-50 hover:text-rose-600" title="Hapus"><i class="fa-solid fa-trash text-[11px]"></i></button>
                 `;
+
+                const reverseNo = totalData - index;
 
                 return `
                     <tr onclick="viewDetail('${i.id}')" class="hover:bg-slate-50/80 cursor-pointer">
+                        <td class="py-4 px-4 text-center font-bold text-slate-500">${reverseNo}</td>
                         <td class="py-4 px-6 font-semibold">${d.getDate()} ${d.toLocaleString('id-ID',{month:'short'})} ${d.getFullYear()}</td>
                         <td class="py-4 px-4"><div class="font-bold text-slate-900">${escapeHtml(i.title)}</div><div class="text-[11px] text-blue-600 font-mono">${escapeHtml(i.programName||'-')} | ${escapeHtml(i.moduleName||i.category||'-')}</div></td>
                         <td class="py-4 px-4">${escapeHtml(i.pic||'-')}</td>
@@ -556,9 +565,17 @@
             const arr = type === 'requirement' ? currentRequirementImages : currentTestingImages;
             document.getElementById(type === 'requirement' ? 'req-count-label' : 'test-count-label').textContent = `${arr.length} Dipilih`;
             container.innerHTML = arr.map((img, idx) => `
-                <div class="relative w-16 h-16 rounded-xl overflow-hidden border group bg-slate-50">
+                <div class="relative w-20 h-20 rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-slate-50 group">
                     <img src="${img}" class="w-full h-full object-cover">
-                    <button type="button" onclick="removeImage('${type}',${idx})" class="absolute inset-0 bg-slate-900/60 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center text-xs"><i class="fa-solid fa-trash"></i></button>
+                    <!-- Tombol Aksi Hover (Lihat & Hapus) -->
+                    <div class="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 flex items-center justify-center space-x-2 transition-opacity">
+                        <button type="button" onclick="openLightbox('${img}')" class="w-7 h-7 bg-blue-600 text-white rounded-lg flex items-center justify-center hover:bg-blue-700 transition-colors" title="Lihat Gambar">
+                            <i class="fa-solid fa-eye text-[11px]"></i>
+                        </button>
+                        <button type="button" onclick="removeImage('${type}', ${idx})" class="w-7 h-7 bg-rose-600 text-white rounded-lg flex items-center justify-center hover:bg-rose-700 transition-colors" title="Hapus Gambar">
+                            <i class="fa-solid fa-trash text-[11px]"></i>
+                        </button>
+                    </div>
                 </div>
             `).join('');
         }
@@ -609,6 +626,17 @@
             const item = logsData.find(l => l.id === id);
             if (!item) return;
 
+            const isGuest = localStorage.getItem('guest_target_uid');
+            const editBtn = document.getElementById('detail-edit-btn');
+            if (editBtn) {
+                if (isGuest) {
+                    editBtn.classList.add('hidden');
+                } else {
+                    editBtn.classList.remove('hidden');
+                    editBtn.setAttribute('onclick', `closeDetailModal(); openLogModal('${id}')`);
+                }
+            }
+
             document.getElementById('detail-title').textContent = item.title;
             document.getElementById('detail-program-name').textContent = item.programName || '-';
             document.getElementById('detail-module-name').textContent = item.moduleName || '-';
@@ -616,7 +644,6 @@
             document.getElementById('detail-pic').textContent = item.pic || '-';
             document.getElementById('detail-description').textContent = item.description || 'Tidak ada deskripsi.';
 
-            // Warna Badge Prioritas Detail Modal: High (Merah), Medium (Kuning), Low (Hijau)
             const priEl = document.getElementById('detail-priority');
             priEl.textContent = item.priority || 'Medium';
             let detailPriClass = 'bg-amber-50 text-amber-700 border border-amber-200';
@@ -725,7 +752,7 @@
             link.click();
         }
 
-        function openLightbox(src) { document.getElementById('lightbox-img').src = src; document.getElementById('lightbox-modal').classList.remove('hidden'); }
+        function openLightbox(src) { document.getElementById('lightbox-img').src = src; document.getElementById('lightbox-modal').classList.add('hidden'); }
         function closeLightbox() { document.getElementById('lightbox-modal').classList.add('hidden'); }
         
         async function handleLogout() {

@@ -88,36 +88,84 @@
         </div>
 
         <!-- Folder Selection Navigation Tabs -->
-        <div class="flex flex-wrap gap-2 bg-white p-2.5 rounded-2xl border border-slate-200/80 shadow-sm">
-            <button onclick="switchFolder('16JxYIzv5DTYfXecAQyzUaZp8XDwFOtUW', 'SAP ALL Hartono')" id="tab-btn-0" class="folder-tab-btn px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-blue-600 text-white shadow-sm flex items-center space-x-2">
-                <i class="fa-solid fa-folder-closed"></i><span>SAP ALL Hartono</span>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 bg-white p-4 rounded-3xl border border-slate-200/80 shadow-sm">
+            <button onclick="switchFolder('16JxYIzv5DTYfXecAQyzUaZp8XDwFOtUW', 'SAP ALL Hartono')" id="tab-btn-0" class="folder-tab-btn p-3.5 rounded-2xl text-left transition-all bg-blue-600 text-white shadow-md flex flex-col justify-between group">
+                <div class="flex items-center justify-between w-full mb-3">
+                    <i class="fa-solid fa-folder-open text-base"></i>
+                </div>
+                <div>
+                    <h4 class="text-xs font-extrabold leading-snug">SAP ALL Hartono</h4>
+                </div>
             </button>
-            <button onclick="switchFolder('1wXtzVM0flR5apcxbNow1JUZnKqwK4Jqc', 'Download System SAP')" id="tab-btn-1" class="folder-tab-btn px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center space-x-2">
-                <i class="fa-solid fa-folder"></i><span>Download System SAP</span>
+            <button onclick="switchFolder('1wXtzVM0flR5apcxbNow1JUZnKqwK4Jqc', 'Download System SAP')" id="tab-btn-1" class="folder-tab-btn p-3.5 rounded-2xl text-left transition-all bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-700 flex flex-col justify-between group">
+                <div class="flex items-center justify-between w-full mb-3">
+                    <i class="fa-solid fa-folder text-base text-slate-400 group-hover:text-blue-600 transition-colors"></i>
+                </div>
+                <div>
+                    <h4 class="text-xs font-extrabold leading-snug">Download System SAP</h4>
+                </div>
             </button>
-            <button onclick="switchFolder('133oK3xHVqfw8cj0PDJWGYgGMwENZ7Ab4', 'SAP Hartono Class Z')" id="tab-btn-2" class="folder-tab-btn px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center space-x-2">
-                <i class="fa-solid fa-folder"></i><span>SAP Hartono Class Z</span>
+            <button onclick="switchFolder('133oK3xHVqfw8cj0PDJWGYgGMwENZ7Ab4', 'SAP Hartono Class Z')" id="tab-btn-2" class="folder-tab-btn p-3.5 rounded-2xl text-left transition-all bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-700 flex flex-col justify-between group">
+                <div class="flex items-center justify-between w-full mb-3">
+                    <i class="fa-solid fa-folder text-base text-slate-400 group-hover:text-blue-600 transition-colors"></i>
+                </div>
+                <div>
+                    <h4 class="text-xs font-extrabold leading-snug">SAP Hartono Class Z</h4>
+                </div>
             </button>
-            <button onclick="switchFolder('1suGFnBLF0yFprY8NRMuzqvJ0c3ZEIreL', 'SAP Hartono Function Z')" id="tab-btn-3" class="folder-tab-btn px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center space-x-2">
-                <i class="fa-solid fa-folder"></i><span>SAP Hartono Function Z</span>
+            <button onclick="switchFolder('1suGFnBLF0yFprY8NRMuzqvJ0c3ZEIreL', 'SAP Hartono Function Z')" id="tab-btn-3" class="folder-tab-btn p-3.5 rounded-2xl text-left transition-all bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-700 flex flex-col justify-between group">
+                <div class="flex items-center justify-between w-full mb-3">
+                    <i class="fa-solid fa-folder text-base text-slate-400 group-hover:text-blue-600 transition-colors"></i>
+                </div>
+                <div>
+                    <h4 class="text-xs font-extrabold leading-snug">SAP Hartono Function Z</h4>
+                </div>
             </button>
-            <button onclick="switchFolder('15Yzun6my-YH3VBCanVwW6ugNn97or656', 'SAP Hartono Program Z')" id="tab-btn-4" class="folder-tab-btn px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center space-x-2">
-                <i class="fa-solid fa-folder"></i><span>SAP Hartono Program Z</span>
+            <button onclick="switchFolder('15Yzun6my-YH3VBCanVwW6ugNn97or656', 'SAP Hartono Program Z')" id="tab-btn-4" class="folder-tab-btn p-3.5 rounded-2xl text-left transition-all bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-700 flex flex-col justify-between group">
+                <div class="flex items-center justify-between w-full mb-3">
+                    <i class="fa-solid fa-folder text-base text-slate-400 group-hover:text-blue-600 transition-colors"></i>
+                </div>
+                <div>
+                    <h4 class="text-xs font-extrabold leading-snug">SAP Hartono Program Z</h4>
+                </div>
             </button>
-            <button onclick="switchFolder('1qlf4uFg9B8CnOSXjOFBvZT12BgW1XAhz', 'SAP Hartono Table Z')" id="tab-btn-5" class="folder-tab-btn px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center space-x-2">
-                <i class="fa-solid fa-folder"></i><span>SAP Hartono Table Z</span>
+            <button onclick="switchFolder('1qlf4uFg9B8CnOSXjOFBvZT12BgW1XAhz', 'SAP Hartono Table Z')" id="tab-btn-5" class="folder-tab-btn p-3.5 rounded-2xl text-left transition-all bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-700 flex flex-col justify-between group">
+                <div class="flex items-center justify-between w-full mb-3">
+                    <i class="fa-solid fa-folder text-base text-slate-400 group-hover:text-blue-600 transition-colors"></i>
+                </div>
+                <div>
+                    <h4 class="text-xs font-extrabold leading-snug">SAP Hartono Table Z</h4>
+                </div>
             </button>
         </div>
 
-        <!-- Google Drive Embedded Container -->
+        <!-- Google Drive Embedded Container with Working Search Action -->
         <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden flex-1 flex flex-col" style="min-height: 700px;">
-            <div class="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                <div class="flex items-center space-x-2 text-xs font-bold text-slate-700">
+            <div class="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div class="flex items-center space-x-2 text-xs font-bold text-slate-700 w-full sm:w-auto">
                     <i class="fa-solid fa-folder-tree text-blue-600"></i>
                     <span id="active-folder-label">SAP ALL Hartono / Repository</span>
                 </div>
-                <span class="text-[11px] text-slate-400">Menampilkan isi folder secara real-time</span>
+                
+                <!-- Input Pencarian Langsung ke Google Drive -->
+                <div class="relative w-full sm:w-80 flex items-center space-x-2">
+                    <div class="relative flex-1">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                        </span>
+                        <input type="text" id="drive-search-input" onkeydown="handleDriveSearch(event)" placeholder="Ketik lalu Enter untuk cari..." 
+                               class="w-full pl-9 pr-8 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button onclick="clearDriveSearch()" id="clear-search-btn" class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-600 hidden">
+                            <i class="fa-solid fa-xmark text-xs"></i>
+                        </button>
+                    </div>
+                    <button onclick="executeDriveSearch()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all flex items-center space-x-1 shrink-0">
+                        <i class="fa-solid fa-search text-[10px]"></i>
+                        <span>Cari</span>
+                    </button>
+                </div>
             </div>
+            
             <div class="flex-1 w-full relative bg-white">
                 <iframe id="drive-iframe" src="https://drive.google.com/embeddedfolderview?id=16JxYIzv5DTYfXecAQyzUaZp8XDwFOtUW#list" 
                         class="w-full h-full border-0 absolute inset-0" 
@@ -150,6 +198,8 @@
 
     <script>
         let auth, db;
+        let currentFolderId = '16JxYIzv5DTYfXecAQyzUaZp8XDwFOtUW';
+        let currentFolderName = 'SAP ALL Hartono';
 
         window.addEventListener('DOMContentLoaded', () => { setTimeout(initProgramPage, 300); });
 
@@ -181,21 +231,59 @@
         }
 
         function switchFolder(folderId, folderName) {
+            currentFolderId = folderId;
+            currentFolderName = folderName;
+            document.getElementById('drive-search-input').value = '';
+            document.getElementById('clear-search-btn').classList.add('hidden');
+            
             // Update iframe src
             document.getElementById('drive-iframe').src = `https://drive.google.com/embeddedfolderview?id=${folderId}#list`;
             document.getElementById('active-folder-label').textContent = `${folderName} / Repository`;
 
             // Update active state on tab buttons
             const buttons = document.querySelectorAll('.folder-tab-btn');
-            buttons.forEach((btn, idx) => {
-                if (btn.textContent.trim().includes(folderName)) {
-                    btn.className = "folder-tab-btn px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-blue-600 text-white shadow-sm flex items-center space-x-2";
-                    btn.querySelector('i').className = "fa-solid fa-folder-closed";
+            buttons.forEach((btn) => {
+                if (btn.textContent.includes(folderName)) {
+                    btn.className = "folder-tab-btn p-3.5 rounded-2xl text-left transition-all bg-blue-600 text-white shadow-md flex flex-col justify-between group";
+                    const icon = btn.querySelector('i');
+                    if(icon) icon.className = "fa-solid fa-folder-open text-base";
                 } else {
-                    btn.className = "folder-tab-btn px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center space-x-2";
-                    btn.querySelector('i').className = "fa-solid fa-folder";
+                    btn.className = "folder-tab-btn p-3.5 rounded-2xl text-left transition-all bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-700 flex flex-col justify-between group";
+                    const icon = btn.querySelector('i');
+                    if(icon) icon.className = "fa-solid fa-folder text-base text-slate-400 group-hover:text-blue-600 transition-colors";
                 }
             });
+        }
+
+        function handleDriveSearch(event) {
+            const query = document.getElementById('drive-search-input').value.trim();
+            const clearBtn = document.getElementById('clear-search-btn');
+
+            if (query.length > 0) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+
+            if (event.key === 'Enter') {
+                executeDriveSearch();
+            }
+        }
+
+        function executeDriveSearch() {
+            const query = document.getElementById('drive-search-input').value.trim();
+            if (!query) return;
+
+            // Karena Google Drive iframe tidak mendukung filter live teks secara internal, 
+            // kita arahkan pengguna membuka tab baru pencarian Google Drive pada folder aktif agar pencarian langsung akurat 100%.
+            const searchUrl = `https://drive.google.com/drive/search?q=parent:${currentFolderId}%20${encodeURIComponent(query)}`;
+            window.open(searchUrl, '_blank');
+        }
+
+        function clearDriveSearch() {
+            document.getElementById('drive-search-input').value = '';
+            document.getElementById('clear-search-btn').classList.add('hidden');
+            document.getElementById('drive-iframe').src = `https://drive.google.com/embeddedfolderview?id=${currentFolderId}#list`;
         }
 
         async function handleLogout() {
