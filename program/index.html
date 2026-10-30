@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Program &bull; LogKerja</title>
+    <title>Dokumen Program &bull; LogKerja</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%236366f1'/><text x='50%' y='53%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='900' font-size='42' fill='%23ffffff'>LOG</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -26,15 +26,14 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, query, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         window.firebaseModules = {
             initializeApp, getAuth, onAuthStateChanged, signOut,
             getFirestore: (app) => initializeFirestore(app, {
-                localCache: persistentLocalCache({
-                    tabManager: persistentMultipleTabManager()
-                })
-            })
+                localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+            }),
+            collection, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, query, addDoc
         };
     </script>
 
@@ -74,103 +73,123 @@
     </header>
 
     <!-- Main Content -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 flex flex-col">
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm">
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        <!-- Top Bar Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm">
             <div>
-                <span class="text-xs font-bold uppercase tracking-wider text-blue-600">Dokumentasi & Repository</span>
-                <h2 class="text-2xl font-black text-slate-900 tracking-tight mt-0.5">Program & Sistem SAP</h2>
-                <p class="text-xs text-slate-500 mt-1">Pilih kategori folder repository untuk melihat daftar program, class, function, dan table SAP secara langsung.</p>
+                <h2 class="text-base font-extrabold text-slate-900">Dokumen Program & Struktur Database</h2>
+                <p class="text-xs text-slate-500 mt-1">Kelola spesifikasi program, multi-tabel beserta kolomnya, flow program, dan logika bisnis.</p>
             </div>
-            <div class="flex items-center space-x-2 text-xs font-bold text-emerald-600 bg-emerald-50 px-3.5 py-2 rounded-xl border border-emerald-100">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>Live Sync Google Drive</span>
+            <div class="flex flex-wrap items-center gap-3">
+                <!-- Tombol Toggle Google Drive di sebelah kiri tombol tambah -->
+                <button id="toggle-drive-btn" onclick="toggleGoogleDrive()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center space-x-2 shadow-sm transition-all">
+                    <span id="drive-dot-indicator" class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                    <span id="drive-btn-text">Not Live Sync Google Drive</span>
+                </button>
+
+                <button onclick="openProgramModal('create')" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center space-x-2 shadow-md shadow-blue-200 transition-all">
+                    <i class="fa-solid fa-plus text-xs"></i><span>Tambah Dokumen Program</span>
+                </button>
             </div>
         </div>
 
-        <!-- Folder Selection Navigation Tabs -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 bg-white p-4 rounded-3xl border border-slate-200/80 shadow-sm">
-            <button onclick="switchFolder('16JxYIzv5DTYfXecAQyzUaZp8XDwFOtUW', 'SAP ALL Hartono')" id="tab-btn-0" class="folder-tab-btn p-3.5 rounded-2xl text-left transition-all bg-blue-600 text-white shadow-md flex flex-col justify-between group">
-                <div class="flex items-center justify-between w-full mb-3">
-                    <i class="fa-solid fa-folder-open text-base"></i>
-                </div>
+        <!-- Google Drive Embedded Section (Hidden by Default) -->
+        <div id="google-drive-section" class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4 hidden transition-all">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-2">
                 <div>
-                    <h4 class="text-xs font-extrabold leading-snug">SAP ALL Hartono</h4>
+                    <span class="text-xs font-bold uppercase tracking-wider text-blue-600">Dokumentasi & Repository</span>
+                    <h3 class="text-lg font-black text-slate-900 tracking-tight">Program & Sistem SAP (Google Drive)</h3>
                 </div>
-            </button>
-            <button onclick="switchFolder('1wXtzVM0flR5apcxbNow1JUZnKqwK4Jqc', 'Download System SAP')" id="tab-btn-1" class="folder-tab-btn p-3.5 rounded-2xl text-left transition-all bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-700 flex flex-col justify-between group">
-                <div class="flex items-center justify-between w-full mb-3">
-                    <i class="fa-solid fa-folder text-base text-slate-400 group-hover:text-blue-600 transition-colors"></i>
+                <div class="flex items-center space-x-2 text-xs font-bold text-emerald-600 bg-emerald-50 px-3.5 py-2 rounded-xl border border-emerald-100 w-fit">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>Live Sync Google Drive Aktif</span>
                 </div>
-                <div>
-                    <h4 class="text-xs font-extrabold leading-snug">Download System SAP</h4>
-                </div>
-            </button>
-            <button onclick="switchFolder('133oK3xHVqfw8cj0PDJWGYgGMwENZ7Ab4', 'SAP Hartono Class Z')" id="tab-btn-2" class="folder-tab-btn p-3.5 rounded-2xl text-left transition-all bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-700 flex flex-col justify-between group">
-                <div class="flex items-center justify-between w-full mb-3">
-                    <i class="fa-solid fa-folder text-base text-slate-400 group-hover:text-blue-600 transition-colors"></i>
-                </div>
-                <div>
-                    <h4 class="text-xs font-extrabold leading-snug">SAP Hartono Class Z</h4>
-                </div>
-            </button>
-            <button onclick="switchFolder('1suGFnBLF0yFprY8NRMuzqvJ0c3ZEIreL', 'SAP Hartono Function Z')" id="tab-btn-3" class="folder-tab-btn p-3.5 rounded-2xl text-left transition-all bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-700 flex flex-col justify-between group">
-                <div class="flex items-center justify-between w-full mb-3">
-                    <i class="fa-solid fa-folder text-base text-slate-400 group-hover:text-blue-600 transition-colors"></i>
-                </div>
-                <div>
-                    <h4 class="text-xs font-extrabold leading-snug">SAP Hartono Function Z</h4>
-                </div>
-            </button>
-            <button onclick="switchFolder('15Yzun6my-YH3VBCanVwW6ugNn97or656', 'SAP Hartono Program Z')" id="tab-btn-4" class="folder-tab-btn p-3.5 rounded-2xl text-left transition-all bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-700 flex flex-col justify-between group">
-                <div class="flex items-center justify-between w-full mb-3">
-                    <i class="fa-solid fa-folder text-base text-slate-400 group-hover:text-blue-600 transition-colors"></i>
-                </div>
-                <div>
-                    <h4 class="text-xs font-extrabold leading-snug">SAP Hartono Program Z</h4>
-                </div>
-            </button>
-            <button onclick="switchFolder('1qlf4uFg9B8CnOSXjOFBvZT12BgW1XAhz', 'SAP Hartono Table Z')" id="tab-btn-5" class="folder-tab-btn p-3.5 rounded-2xl text-left transition-all bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-700 flex flex-col justify-between group">
-                <div class="flex items-center justify-between w-full mb-3">
-                    <i class="fa-solid fa-folder text-base text-slate-400 group-hover:text-blue-600 transition-colors"></i>
-                </div>
-                <div>
-                    <h4 class="text-xs font-extrabold leading-snug">SAP Hartono Table Z</h4>
-                </div>
-            </button>
-        </div>
+            </div>
 
-        <!-- Google Drive Embedded Container with Working Search Action -->
-        <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden flex-1 flex flex-col" style="min-height: 700px;">
-            <div class="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-3">
-                <div class="flex items-center space-x-2 text-xs font-bold text-slate-700 w-full sm:w-auto">
-                    <i class="fa-solid fa-folder-tree text-blue-600"></i>
-                    <span id="active-folder-label">SAP ALL Hartono / Repository</span>
-                </div>
-                
-                <!-- Input Pencarian Langsung ke Google Drive -->
-                <div class="relative w-full sm:w-80 flex items-center space-x-2">
-                    <div class="relative flex-1">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
-                        </span>
-                        <input type="text" id="drive-search-input" onkeydown="handleDriveSearch(event)" placeholder="Ketik lalu Enter untuk cari..." 
-                               class="w-full pl-9 pr-8 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <button onclick="clearDriveSearch()" id="clear-search-btn" class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-600 hidden">
-                            <i class="fa-solid fa-xmark text-xs"></i>
+            <!-- Folder Selection Tabs + Tombol Link External Google Drive -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
+                <a href="https://drive.google.com" target="_blank" class="p-3.5 rounded-2xl text-left transition-all bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 flex flex-col justify-between group shadow-sm">
+                    <div class="flex items-center justify-between w-full mb-3">
+                        <i class="fa-brands fa-google text-base text-amber-600 group-hover:scale-110 transition-transform"></i>
+                        <i class="fa-solid fa-external-link text-[10px] text-amber-500"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-extrabold leading-snug">From Google</h4>
+                        <p class="text-[10px] text-amber-600/80 mt-0.5">Buka Drive</p>
+                    </div>
+                </a>
+
+                <button onclick="switchFolder('16JxYIzv5DTYfXecAQyzUaZp8XDwFOtUW', 'SAP ALL Hartono')" id="tab-btn-0" class="folder-tab-btn p-3.5 rounded-2xl text-left transition-all bg-blue-600 text-white shadow-md flex flex-col justify-between group">
+                    <div class="flex items-center justify-between w-full mb-3"><i class="fa-solid fa-folder-open text-base"></i></div>
+                    <div><h4 class="text-xs font-extrabold leading-snug">SAP ALL Hartono</h4></div>
+                </button>
+                <button onclick="switchFolder('1wXtzVM0flR5apcxbNow1JUZnKqwK4Jqc', 'Download System SAP')" id="tab-btn-1" class="folder-tab-btn p-3.5 rounded-2xl text-left transition-all bg-white hover:bg-slate-100 border border-slate-200/80 text-slate-700 flex flex-col justify-between group">
+                    <div class="flex items-center justify-between w-full mb-3"><i class="fa-solid fa-folder text-base text-slate-400 group-hover:text-blue-600 transition-colors"></i></div>
+                    <div><h4 class="text-xs font-extrabold leading-snug">Download System SAP</h4></div>
+                </button>
+                <button onclick="switchFolder('133oK3xHVqfw8cj0PDJWGYgGMwENZ7Ab4', 'SAP Hartono Class Z')" id="tab-btn-2" class="folder-tab-btn p-3.5 rounded-2xl text-left transition-all bg-white hover:bg-slate-100 border border-slate-200/80 text-slate-700 flex flex-col justify-between group">
+                    <div class="flex items-center justify-between w-full mb-3"><i class="fa-solid fa-folder text-base text-slate-400 group-hover:text-blue-600 transition-colors"></i></div>
+                    <div><h4 class="text-xs font-extrabold leading-snug">SAP Hartono Class Z</h4></div>
+                </button>
+                <button onclick="switchFolder('1suGFnBLF0yFprY8NRMuzqvJ0c3ZEIreL', 'SAP Hartono Function Z')" id="tab-btn-3" class="folder-tab-btn p-3.5 rounded-2xl text-left transition-all bg-white hover:bg-slate-100 border border-slate-200/80 text-slate-700 flex flex-col justify-between group">
+                    <div class="flex items-center justify-between w-full mb-3"><i class="fa-solid fa-folder text-base text-slate-400 group-hover:text-blue-600 transition-colors"></i></div>
+                    <div><h4 class="text-xs font-extrabold leading-snug">SAP Hartono Function Z</h4></div>
+                </button>
+                <button onclick="switchFolder('15Yzun6my-YH3VBCanVwW6ugNn97or656', 'SAP Hartono Program Z')" id="tab-btn-4" class="folder-tab-btn p-3.5 rounded-2xl text-left transition-all bg-white hover:bg-slate-100 border border-slate-200/80 text-slate-700 flex flex-col justify-between group">
+                    <div class="flex items-center justify-between w-full mb-3"><i class="fa-solid fa-folder text-base text-slate-400 group-hover:text-blue-600 transition-colors"></i></div>
+                    <div><h4 class="text-xs font-extrabold leading-snug">SAP Hartono Program Z</h4></div>
+                </button>
+                <button onclick="switchFolder('1qlf4uFg9B8CnOSXjOFBvZT12BgW1XAhz', 'SAP Hartono Table Z')" id="tab-btn-5" class="folder-tab-btn p-3.5 rounded-2xl text-left transition-all bg-white hover:bg-slate-100 border border-slate-200/80 text-slate-700 flex flex-col justify-between group">
+                    <div class="flex items-center justify-between w-full mb-3"><i class="fa-solid fa-folder text-base text-slate-400 group-hover:text-blue-600 transition-colors"></i></div>
+                    <div><h4 class="text-xs font-extrabold leading-snug">SAP Hartono Table Z</h4></div>
+                </button>
+            </div>
+
+            <!-- Embedded Container Drive -->
+            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col" style="height: 550px;">
+                <div class="p-3.5 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div class="flex items-center space-x-2 text-xs font-bold text-slate-700 w-full sm:w-auto">
+                        <i class="fa-solid fa-folder-tree text-blue-600"></i>
+                        <span id="active-folder-label">SAP ALL Hartono / Repository</span>
+                    </div>
+                    
+                    <div class="relative w-full sm:w-80 flex items-center space-x-2">
+                        <div class="relative flex-1">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                                <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                            </span>
+                            <input type="text" id="drive-search-input" onkeydown="handleDriveSearch(event)" placeholder="Cari file di folder ini..." 
+                                   class="w-full pl-9 pr-8 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <button onclick="clearDriveSearch()" id="clear-search-btn" class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-600 hidden">
+                                <i class="fa-solid fa-xmark text-xs"></i>
+                            </button>
+                        </div>
+                        <button onclick="executeDriveSearch()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all flex items-center space-x-1 shrink-0">
+                            <i class="fa-solid fa-search text-[10px]"></i><span>Cari</span>
                         </button>
                     </div>
-                    <button onclick="executeDriveSearch()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all flex items-center space-x-1 shrink-0">
-                        <i class="fa-solid fa-search text-[10px]"></i>
-                        <span>Cari</span>
-                    </button>
+                </div>
+                <div class="flex-1 w-full relative bg-white">
+                    <iframe id="drive-iframe" src="" class="w-full h-full border-0 absolute inset-0" title="Google Drive Program SAP"></iframe>
                 </div>
             </div>
-            
-            <div class="flex-1 w-full relative bg-white">
-                <iframe id="drive-iframe" src="https://drive.google.com/embeddedfolderview?id=16JxYIzv5DTYfXecAQyzUaZp8XDwFOtUW#list" 
-                        class="w-full h-full border-0 absolute inset-0" 
-                        title="Google Drive Program SAP">
-                </iframe>
+        </div>
+
+        <!-- Bagian Dokumen Program & Pencarian Lokal (Bisa di-hide/show via tombol Live Sync) -->
+        <div id="local-documents-section" class="space-y-6 transition-all">
+            <!-- Search & Filter Bar for Local Program Documents -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
+                <div class="relative flex-1">
+                    <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" id="search-input" oninput="filterPrograms()" placeholder="Cari dokumen program, multi-tabel, atau deskripsi..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+
+            <!-- Program Cards / List Container -->
+            <div id="program-list-container" class="grid grid-cols-1 gap-6">
+                <div class="bg-white p-8 rounded-3xl border border-slate-200 text-center text-slate-400 text-xs">
+                    Memuat data dokumen program...
+                </div>
             </div>
         </div>
     </main>
@@ -180,7 +199,7 @@
         <p>&copy; 2026 LogKerja &bull; Copyright <span class="font-bold text-slate-600">@Mochamad Fuad Asyhary</span></p>
     </footer>
 
-    <!-- Mobile Bottom Nav -->
+    <!-- Mobile Bottom Nav -->    
     <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40 flex items-center justify-around py-2 px-3 shadow-lg">
         <button onclick="location.href='../dashboard/'" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400">
             <i class="fa-solid fa-chart-pie text-base mb-0.5"></i><span class="text-[10px] font-medium">Dashboard</span>
@@ -196,17 +215,130 @@
         </button>
     </nav>
 
+    <!-- Modal Form (Create / Edit Program) -->
+    <div id="program-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden overflow-y-auto">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden border border-slate-100 my-8">
+            <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 to-blue-50/30">
+                <h3 id="modal-title" class="font-bold text-base text-slate-900">Tambah Dokumen Program</h3>
+                <button onclick="closeProgramModal()" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-500 flex items-center justify-center shadow-sm"><i class="fa-solid fa-xmark text-xs"></i></button>
+            </div>
+            
+            <form id="program-form" onsubmit="handleProgramSubmit(event)" class="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+                <input type="hidden" id="prog-id">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Nama Program / Transaksi</label>
+                        <input type="text" id="prog-name" required placeholder="Contoh: ZSD_REPORT_PENJUALAN" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Modul / Kategori</label>
+                        <select id="prog-module" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="FICO SAP">FICO SAP</option><option value="MM SAP">MM SAP</option><option value="SD SAP">SD SAP</option><option value="PP SAP">PP SAP</option>
+                            <option value="BW SAP">BW SAP</option><option value="ABAP Custom">ABAP Custom</option><option value="Interface API">Interface API</option><option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Deskripsi Singkat / Tujuan Program</label>
+                    <textarea id="prog-description" rows="2" placeholder="Jelaskan fungsi utama program ini..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+
+                <div class="border-t border-slate-100 pt-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <h4 class="font-bold text-slate-900 text-xs uppercase">Struktur Tabel Database</h4>
+                            <p class="text-[11px] text-slate-400">Anda dapat menambahkan banyak tabel beserta daftar kolom dan tipe datanya.</p>
+                        </div>
+                        <button type="button" onclick="addTableBlock()" class="px-3.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5">
+                            <i class="fa-solid fa-table text-[11px]"></i><span>+ Tambah Tabel</span>
+                        </button>
+                    </div>
+
+                    <div id="tables-container" class="space-y-4"></div>
+                </div>
+
+                <div class="border-t border-slate-100 pt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-blue-600 mb-1">Flow Program (Alur Eksekusi)</label>
+                        <textarea id="prog-flow" rows="5" placeholder="1. Inisialisasi parameter selection-screen&#10;2. Ambil data dari tabel database&#10;3. Olah data (Looping/Validation)&#10;4. Tampilkan ALV Grid / Output" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 leading-relaxed font-mono"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-emerald-600 mb-1">Logika Bisnis & Validasi</label>
+                        <textarea id="prog-logic" rows="5" placeholder="- Jika kondisi X terpenuhi, lakukan kalkulasi Y&#10;- Validasi otorisasi user dengan Authority Check&#10;- Penanganan error jika data tidak ditemukan" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 leading-relaxed font-mono"></textarea>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-end space-x-3">
+                    <button type="button" onclick="closeProgramModal()" class="px-5 py-3 bg-slate-100 text-slate-600 rounded-2xl text-xs font-bold">Batal</button>
+                    <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-2xl text-xs font-bold shadow-md shadow-blue-200">Simpan Dokumen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Detail Dokumen Program -->
+    <div id="detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden overflow-y-auto">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden border border-slate-100 my-8">
+            <div class="p-6 border-b flex items-center justify-between bg-gradient-to-r from-slate-50 to-blue-50/30">
+                <div>
+                    <span id="detail-module-badge" class="text-[10px] font-bold uppercase text-blue-600">Modul</span>
+                    <h3 id="detail-prog-name" class="font-extrabold text-slate-900 text-base font-mono"></h3>
+                </div>
+                <button onclick="closeDetailModal()" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-500 flex items-center justify-center"><i class="fa-solid fa-xmark text-xs"></i></button>
+            </div>
+            
+            <div class="p-6 space-y-6 text-xs max-h-[70vh] overflow-y-auto">
+                <div>
+                    <span class="text-[10px] font-bold text-slate-400 block uppercase mb-1">Deskripsi Program</span>
+                    <p id="detail-description" class="text-slate-600 bg-slate-50 p-4 rounded-2xl leading-relaxed border border-slate-100"></p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-slate-900 text-xs uppercase mb-3"><i class="fa-solid fa-table mr-1.5 text-blue-600"></i> Struktur Tabel & Kolom</h4>
+                    <div id="detail-tables-container" class="space-y-4"></div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <span class="text-[11px] font-bold text-blue-600 block uppercase mb-2"><i class="fa-solid fa-network-wired mr-1"></i> Flow Program</span>
+                        <pre id="detail-flow" class="text-slate-700 whitespace-pre-wrap font-mono text-[11px] leading-relaxed"></pre>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <span class="text-[11px] font-bold text-emerald-600 block uppercase mb-2"><i class="fa-solid fa-gears mr-1"></i> Logika Bisnis</span>
+                        <pre id="detail-logic" class="text-slate-700 whitespace-pre-wrap font-mono text-[11px] leading-relaxed"></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                <button id="detail-edit-btn" onclick="" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs shadow-md transition-all flex items-center space-x-2">
+                    <i class="fa-solid fa-pen text-[11px]"></i><span>Edit Dokumen</span>
+                </button>
+                <button onclick="closeDetailModal()" class="px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-xs shadow-md">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Utama -->
     <script>
-        let auth, db;
+        let auth, db, currentUserId = null, programsData = [];
         let currentFolderId = '16JxYIzv5DTYfXecAQyzUaZp8XDwFOtUW';
         let currentFolderName = 'SAP ALL Hartono';
+        let isDriveVisible = false;
 
-        window.addEventListener('DOMContentLoaded', () => { setTimeout(initProgramPage, 300); });
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(initApp, 300);
+        });
 
-        function showLoader(text="Memproses...") { document.getElementById('loader-text').textContent = text; document.getElementById('global-loader').classList.remove('hidden'); }
+        function showLoader(text="Memuat...") {
+            document.getElementById('loader-text').textContent = text;
+            document.getElementById('global-loader').classList.remove('hidden');
+        }
         function hideLoader() { document.getElementById('global-loader').classList.add('hidden'); }
 
-        function initProgramPage() {
+        function initApp() {
             const firebaseConfig = {
                 apiKey: "AIzaSyDdHNw_tN_keSlNePxCib8M98dsxo00_Gg",
                 authDomain: "log-kerja.firebaseapp.com",
@@ -221,26 +353,81 @@
             auth = fm.getAuth(app);
             db = fm.getFirestore(app);
 
+            showLoader("Memuat Data...");
+
             const guestUid = localStorage.getItem('guest_target_uid');
-            if (!guestUid) {
-                fm.onAuthStateChanged(auth, (user) => {
-                    if (!user) window.location.href = '../';
+            if (guestUid) {
+                currentUserId = guestUid;
+                setupRealtimeListeners(guestUid);
+            } else {
+                fm.onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        currentUserId = user.uid;
+                        setupRealtimeListeners(user.uid);
+                    } else {
+                        window.location.href = '../';
+                    }
                 });
             }
-            hideLoader();
         }
 
+        function setupRealtimeListeners(userId) {
+            const fm = window.firebaseModules;
+            hideLoader();
+
+            fm.onSnapshot(fm.query(fm.collection(db, 'users', userId, 'program_docs')), (snapshot) => {
+                programsData = [];
+                snapshot.forEach(doc => programsData.push({ id: doc.id, ...doc.data() }));
+                renderProgramsList(programsData);
+            }, (error) => {
+                console.error("Error snapshot:", error);
+                hideLoader();
+            });
+        }
+
+        // --- TOGGLE GOOGLE DRIVE & LOCAL DOCUMENTS SECTION ---
+        function toggleGoogleDrive() {
+            isDriveVisible = !isDriveVisible;
+            const driveSection = document.getElementById('google-drive-section');
+            const localSection = document.getElementById('local-documents-section');
+            const btnText = document.getElementById('drive-btn-text');
+            const dotIndicator = document.getElementById('drive-dot-indicator');
+            const toggleBtn = document.getElementById('toggle-drive-btn');
+
+            if (isDriveVisible) {
+                // Tampilkan Google Drive, Sembunyikan Dokumen Program Lokal
+                driveSection.classList.remove('hidden');
+                localSection.classList.add('hidden');
+
+                btnText.textContent = "Live Sync Google Drive";
+                dotIndicator.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
+                toggleBtn.className = "px-4 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold flex items-center space-x-2 shadow-sm transition-all";
+                
+                const iframe = document.getElementById('drive-iframe');
+                if (!iframe.src || iframe.src === window.location.href) {
+                    iframe.src = `https://drive.google.com/embeddedfolderview?id=${currentFolderId}#list`;
+                }
+            } else {
+                // Sembunyikan Google Drive, Tampilkan Kembali Dokumen Program Lokal
+                driveSection.classList.add('hidden');
+                localSection.classList.remove('hidden');
+
+                btnText.textContent = "Not Live Sync Google Drive";
+                dotIndicator.className = "w-2.5 h-2.5 rounded-full bg-slate-400";
+                toggleBtn.className = "px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center space-x-2 shadow-sm transition-all";
+            }
+        }
+
+        // --- GOOGLE DRIVE INTEGRATION FUNCTIONS ---
         function switchFolder(folderId, folderName) {
             currentFolderId = folderId;
             currentFolderName = folderName;
             document.getElementById('drive-search-input').value = '';
             document.getElementById('clear-search-btn').classList.add('hidden');
             
-            // Update iframe src
             document.getElementById('drive-iframe').src = `https://drive.google.com/embeddedfolderview?id=${folderId}#list`;
             document.getElementById('active-folder-label').textContent = `${folderName} / Repository`;
 
-            // Update active state on tab buttons
             const buttons = document.querySelectorAll('.folder-tab-btn');
             buttons.forEach((btn) => {
                 if (btn.textContent.includes(folderName)) {
@@ -248,7 +435,7 @@
                     const icon = btn.querySelector('i');
                     if(icon) icon.className = "fa-solid fa-folder-open text-base";
                 } else {
-                    btn.className = "folder-tab-btn p-3.5 rounded-2xl text-left transition-all bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-700 flex flex-col justify-between group";
+                    btn.className = "folder-tab-btn p-3.5 rounded-2xl text-left transition-all bg-white hover:bg-slate-100 border border-slate-200/80 text-slate-700 flex flex-col justify-between group";
                     const icon = btn.querySelector('i');
                     if(icon) icon.className = "fa-solid fa-folder text-base text-slate-400 group-hover:text-blue-600 transition-colors";
                 }
@@ -259,23 +446,15 @@
             const query = document.getElementById('drive-search-input').value.trim();
             const clearBtn = document.getElementById('clear-search-btn');
 
-            if (query.length > 0) {
-                clearBtn.classList.remove('hidden');
-            } else {
-                clearBtn.classList.add('hidden');
-            }
+            if (query.length > 0) clearBtn.classList.remove('hidden');
+            else clearBtn.classList.add('hidden');
 
-            if (event.key === 'Enter') {
-                executeDriveSearch();
-            }
+            if (event.key === 'Enter') executeDriveSearch();
         }
 
         function executeDriveSearch() {
             const query = document.getElementById('drive-search-input').value.trim();
             if (!query) return;
-
-            // Karena Google Drive iframe tidak mendukung filter live teks secara internal, 
-            // kita arahkan pengguna membuka tab baru pencarian Google Drive pada folder aktif agar pencarian langsung akurat 100%.
             const searchUrl = `https://drive.google.com/drive/search?q=parent:${currentFolderId}%20${encodeURIComponent(query)}`;
             window.open(searchUrl, '_blank');
         }
@@ -286,12 +465,302 @@
             document.getElementById('drive-iframe').src = `https://drive.google.com/embeddedfolderview?id=${currentFolderId}#list`;
         }
 
+        // --- LOCAL PROGRAM DOCUMENTS CRUD FUNCTIONS ---
+        function renderProgramsList(data) {
+            const container = document.getElementById('program-list-container');
+            const isGuest = localStorage.getItem('guest_target_uid');
+
+            if (data.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white p-12 rounded-3xl border border-slate-200 text-center space-y-3">
+                        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto text-base">
+                            <i class="fa-solid fa-folder-open"></i>
+                        </div>
+                        <h4 class="font-bold text-slate-800 text-sm">Belum Ada Dokumen Program</h4>
+                        <p class="text-xs text-slate-400 max-w-sm mx-auto">Klik tombol "Tambah Dokumen Program" di atas untuk membuat dokumentasi baru.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = data.map(item => {
+                const tables = item.tables || [];
+                return `
+                    <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center font-bold">
+                                    <i class="fa-solid fa-code text-sm"></i>
+                                </div>
+                                <div>
+                                    <div class="flex items-center space-x-2">
+                                        <h3 class="font-extrabold text-slate-900 text-sm font-mono">${escapeHtml(item.programName)}</h3>
+                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-600">${escapeHtml(item.moduleName)}</span>
+                                    </div>
+                                    <p class="text-xs text-slate-500 mt-0.5">${escapeHtml(item.description || 'Tidak ada deskripsi')}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button onclick="viewProgramDetail('${item.id}')" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5">
+                                    <i class="fa-solid fa-eye text-[11px]"></i><span>Detail</span>
+                                </button>
+                                ${!isGuest ? `
+                                    <button onclick="openProgramModal('edit', '${item.id}')" class="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5">
+                                        <i class="fa-solid fa-pen text-[11px]"></i><span>Edit</span>
+                                    </button>
+                                    <button onclick="deleteProgram('${item.id}')" class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5">
+                                        <i class="fa-solid fa-trash text-[11px]"></i><span>Hapus</span>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        <div>
+                            <span class="text-[10px] font-bold uppercase text-slate-400 block mb-2">Tabel Terkait (${tables.length} Tabel)</span>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                ${tables.map(t => `
+                                    <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                                        <div class="font-bold text-xs text-slate-800 font-mono mb-1"><i class="fa-solid fa-table text-blue-500 mr-1"></i> ${escapeHtml(t.tableName)}</div>
+                                        <div class="text-[11px] text-slate-500">${t.columns ? t.columns.length : 0} Kolom didefinisikan</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterPrograms() {
+            const keyword = document.getElementById('search-input').value.toLowerCase();
+            const filtered = programsData.filter(i => 
+                (i.programName && i.programName.toLowerCase().includes(keyword)) ||
+                (i.moduleName && i.moduleName.toLowerCase().includes(keyword)) ||
+                (i.description && i.description.toLowerCase().includes(keyword))
+            );
+            renderProgramsList(filtered);
+        }
+
+        function addTableBlock(tableData = null) {
+            const container = document.getElementById('tables-container');
+            const blockId = 'table_block_' + Date.now() + '_' + Math.random().toString(36).substring(2,7);
+            
+            const tableName = tableData ? tableData.tableName : '';
+            const columns = tableData ? tableData.columns : [{ columnName: '', dataType: '', description: '' }];
+
+            const blockHTML = `
+                <div id="${blockId}" class="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-3 table-block-item">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1 mr-3">
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Nama Tabel</label>
+                            <input type="text" class="table-name-input w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Contoh: ZT_SALES_HDR" value="${escapeHtml(tableName)}">
+                        </div>
+                        <button type="button" onclick="document.getElementById('${blockId}').remove()" class="mt-5 w-8 h-8 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center text-xs transition-all" title="Hapus Tabel">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[10px] font-bold uppercase text-slate-400">Kolom Tabel</span>
+                            <button type="button" onclick="addColumnRow('${blockId}')" class="text-[11px] font-bold text-blue-600 hover:text-blue-700">+ Tambah Kolom</button>
+                        </div>
+                        <div class="columns-container space-y-2">
+                            ${columns.map(c => `
+                                <div class="flex items-center space-x-2 column-row">
+                                    <input type="text" class="col-name w-1/3 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono" placeholder="Nama Kolom" value="${escapeHtml(c.columnName || '')}">
+                                    <input type="text" class="col-type w-1/3 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono" placeholder="Tipe Data (C, INT, DATE)" value="${escapeHtml(c.dataType || '')}">
+                                    <input type="text" class="col-desc w-1/3 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs" placeholder="Keterangan" value="${escapeHtml(c.description || '')}">
+                                    <button type="button" onclick="this.parentElement.remove()" class="w-8 h-8 text-slate-400 hover:text-rose-600 flex items-center justify-center"><i class="fa-solid fa-xmark text-xs"></i></button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', blockHTML);
+        }
+
+        function addColumnRow(blockId) {
+            const block = document.getElementById(blockId);
+            const colContainer = block.querySelector('.columns-container');
+            const rowHTML = `
+                <div class="flex items-center space-x-2 column-row">
+                    <input type="text" class="col-name w-1/3 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono" placeholder="Nama Kolom">
+                    <input type="text" class="col-type w-1/3 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono" placeholder="Tipe Data (C, INT, DATE)">
+                    <input type="text" class="col-desc w-1/3 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs" placeholder="Keterangan">
+                    <button type="button" onclick="this.parentElement.remove()" class="w-8 h-8 text-slate-400 hover:text-rose-600 flex items-center justify-center"><i class="fa-solid fa-xmark text-xs"></i></button>
+                </div>
+            `;
+            colContainer.insertAdjacentHTML('beforeend', rowHTML);
+        }
+
+        function openProgramModal(mode, id = null) {
+            document.getElementById('prog-id').value = '';
+            document.getElementById('prog-name').value = '';
+            document.getElementById('prog-description').value = '';
+            document.getElementById('prog-flow').value = '';
+            document.getElementById('prog-logic').value = '';
+            document.getElementById('tables-container').innerHTML = '';
+
+            if (mode === 'create') {
+                document.getElementById('modal-title').textContent = 'Tambah Dokumen Program';
+                addTableBlock();
+            } else if (mode === 'edit' && id) {
+                document.getElementById('modal-title').textContent = 'Edit Dokumen Program';
+                const item = programsData.find(p => p.id === id);
+                if (item) {
+                    document.getElementById('prog-id').value = item.id;
+                    document.getElementById('prog-name').value = item.programName || '';
+                    document.getElementById('prog-module').value = item.moduleName || 'FICO SAP';
+                    document.getElementById('prog-description').value = item.description || '';
+                    document.getElementById('prog-flow').value = item.flow || '';
+                    document.getElementById('prog-logic').value = item.logic || '';
+
+                    if (item.tables && item.tables.length > 0) {
+                        item.tables.forEach(t => addTableBlock(t));
+                    } else {
+                        addTableBlock();
+                    }
+                }
+            }
+            document.getElementById('program-modal').classList.remove('hidden');
+        }
+
+        function closeProgramModal() { document.getElementById('program-modal').classList.add('hidden'); }
+
+        async function handleProgramSubmit(e) {
+            e.preventDefault();
+            showLoader("Menyimpan Dokumen Program...");
+
+            const fm = window.firebaseModules;
+            const id = document.getElementById('prog-id').value;
+
+            const tableBlocks = document.querySelectorAll('.table-block-item');
+            const tables = [];
+            tableBlocks.forEach(block => {
+                const tableName = block.querySelector('.table-name-input').value.trim();
+                if (!tableName) return;
+                
+                const colRows = block.querySelectorAll('.column-row');
+                const columns = [];
+                colRows.forEach(row => {
+                    columns.push({
+                        columnName: row.querySelector('.col-name').value.trim(),
+                        dataType: row.querySelector('.col-type').value.trim(),
+                        description: row.querySelector('.col-desc').value.trim()
+                    });
+                });
+
+                tables.push({ tableName, columns });
+            });
+
+            const payload = {
+                programName: document.getElementById('prog-name').value.trim(),
+                moduleName: document.getElementById('prog-module').value,
+                description: document.getElementById('prog-description').value.trim(),
+                tables: tables,
+                flow: document.getElementById('prog-flow').value.trim(),
+                logic: document.getElementById('prog-logic').value.trim(),
+                updatedAt: new Date().toISOString()
+            };
+
+            try {
+                if (id) {
+                    await fm.updateDoc(fm.doc(db, 'users', currentUserId, 'program_docs', id), payload);
+                } else {
+                    payload.createdAt = new Date().toISOString();
+                    await fm.addDoc(fm.collection(db, 'users', currentUserId, 'program_docs'), payload);
+                }
+                hideLoader();
+                closeProgramModal();
+            } catch (err) {
+                hideLoader();
+                alert('Gagal menyimpan: ' + err.message);
+            }
+        }
+
+        async function deleteProgram(id) {
+            if (!confirm('Apakah Anda yakin ingin menghapus dokumen program ini?')) return;
+            showLoader("Menghapus...");
+            const fm = window.firebaseModules;
+            try {
+                await fm.deleteDoc(fm.doc(db, 'users', currentUserId, 'program_docs', id));
+                hideLoader();
+            } catch (err) {
+                hideLoader();
+                alert('Gagal menghapus: ' + err.message);
+            }
+        }
+
+        function viewProgramDetail(id) {
+            const item = programsData.find(p => p.id === id);
+            if (!item) return;
+
+            const isGuest = localStorage.getItem('guest_target_uid');
+            const editBtn = document.getElementById('detail-edit-btn');
+            if (editBtn) {
+                if (isGuest) editBtn.style.display = 'none';
+                else {
+                    editBtn.style.display = 'flex';
+                    editBtn.setAttribute('onclick', `closeDetailModal(); openProgramModal('edit', '${id}')`);
+                }
+            }
+
+            document.getElementById('detail-prog-name').textContent = item.programName;
+            document.getElementById('detail-module-badge').textContent = item.moduleName;
+            document.getElementById('detail-description').textContent = item.description || 'Tidak ada deskripsi.';
+            document.getElementById('detail-flow').textContent = item.flow || 'Tidak ada dokumentasi flow.';
+            document.getElementById('detail-logic').textContent = item.logic || 'Tidak ada dokumentasi logika bisnis.';
+
+            const tablesContainer = document.getElementById('detail-tables-container');
+            const tables = item.tables || [];
+
+            if (tables.length === 0) {
+                tablesContainer.innerHTML = `<p class="text-xs text-slate-400 italic">Tidak ada tabel yang didefinisikan.</p>`;
+            } else {
+                tablesContainer.innerHTML = tables.map(t => `
+                    <div class="bg-slate-50 rounded-2xl border border-slate-200/80 overflow-hidden">
+                        <div class="p-3.5 bg-blue-50/50 border-b border-slate-200/60 font-bold text-xs text-slate-900 font-mono flex items-center">
+                            <i class="fa-solid fa-table text-blue-600 mr-2"></i> ${escapeHtml(t.tableName)}
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="border-b border-slate-200 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-white/50">
+                                        <th class="py-2.5 px-4">Nama Kolom</th>
+                                        <th class="py-2.5 px-4">Tipe Data</th>
+                                        <th class="py-2.5 px-4">Keterangan</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 text-xs font-mono">
+                                    ${(t.columns || []).map(c => `
+                                        <tr class="hover:bg-white/80">
+                                            <td class="py-2.5 px-4 font-bold text-slate-800">${escapeHtml(c.columnName)}</td>
+                                            <td class="py-2.5 px-4 text-blue-600 font-semibold">${escapeHtml(c.dataType)}</td>
+                                            <td class="py-2.5 px-4 text-slate-600 font-sans">${escapeHtml(c.description || '-')}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('detail-modal').classList.remove('hidden');
+        }
+
+        function closeDetailModal() { document.getElementById('detail-modal').classList.add('hidden'); }
+
         async function handleLogout() {
             localStorage.removeItem('guest_target_uid');
             const fm = window.firebaseModules;
             if (auth) await fm.signOut(auth);
             window.location.href = '../';
         }
+
+        function escapeHtml(str) { return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
     </script>
 </body>
 </html>
