@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Library SheetJS untuk membaca & mengekspor file Excel (.xlsx / .xls / .csv) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body class="bg-[#f8fafc] text-slate-800 font-sans antialiased min-h-screen flex flex-col pb-20 md:pb-0">
 
@@ -65,6 +67,17 @@
             </div>
 
             <div class="flex items-center space-x-3">
+                <!-- Tombol Inject Data Excel -->
+                <button onclick="openInjectModal()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center space-x-2 shadow-md shadow-emerald-200 transition-all">
+                    <i class="fa-solid fa-file-excel text-xs"></i><span>Inject Data Excel</span>
+                </button>
+
+                <!-- Tombol Tambah Dokumen Program -->
+                <button onclick="openProgramModal('create')" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center space-x-2 shadow-md shadow-blue-200 transition-all">
+                    <i class="fa-solid fa-plus text-xs"></i><span>Tambah Dokumen Program</span>
+                </button>
+                
+                <!-- Tombol Keluar -->
                 <button onclick="handleLogout()" class="w-9 h-9 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-600 rounded-xl flex items-center justify-center text-xs transition-all" title="Keluar">
                     <i class="fa-solid fa-right-from-bracket"></i>
                 </button>
@@ -81,14 +94,15 @@
                 <p class="text-xs text-slate-500 mt-1">Kelola spesifikasi program, multi-tabel beserta kolomnya, flow program, dan logika bisnis.</p>
             </div>
             <div class="flex flex-wrap items-center gap-3">
-                <!-- Tombol Toggle Google Drive di sebelah kiri tombol tambah -->
+                <!-- Tombol Ekspor Excel -->
+                <button onclick="exportProgramsToExcel()" class="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold flex items-center space-x-2 shadow-sm transition-all">
+                    <i class="fa-solid fa-file-excel text-emerald-600 text-xs"></i><span>Ekspor Excel</span>
+                </button>
+
+                <!-- Tombol Toggle Google Drive -->
                 <button id="toggle-drive-btn" onclick="toggleGoogleDrive()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center space-x-2 shadow-sm transition-all">
                     <span id="drive-dot-indicator" class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
                     <span id="drive-btn-text">Not Live Sync Google Drive</span>
-                </button>
-
-                <button onclick="openProgramModal('create')" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center space-x-2 shadow-md shadow-blue-200 transition-all">
-                    <i class="fa-solid fa-plus text-xs"></i><span>Tambah Dokumen Program</span>
                 </button>
             </div>
         </div>
@@ -106,7 +120,7 @@
                 </div>
             </div>
 
-            <!-- Folder Selection Tabs + Tombol Link External Google Drive -->
+            <!-- Folder Selection Tabs -->
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
                 <a href="https://drive.google.com" target="_blank" class="p-3.5 rounded-2xl text-left transition-all bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 flex flex-col justify-between group shadow-sm">
                     <div class="flex items-center justify-between w-full mb-3">
@@ -175,9 +189,9 @@
             </div>
         </div>
 
-        <!-- Bagian Dokumen Program & Pencarian Lokal (Bisa di-hide/show via tombol Live Sync) -->
+        <!-- Bagian Dokumen Program & Pencarian Lokal -->
         <div id="local-documents-section" class="space-y-6 transition-all">
-            <!-- Search & Filter Bar for Local Program Documents -->
+            <!-- Search & Filter Bar -->
             <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
                 <div class="relative flex-1">
                     <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
@@ -196,7 +210,7 @@
 
     <!-- Footer -->
     <footer class="py-4 text-center text-xs text-slate-400 border-t border-slate-100 bg-white mt-auto mb-16 md:mb-0">
-        <p>&copy; 2026 LogKerja &bull; Copyright <span class="font-bold text-slate-600">@Mochamad Fuad Asyhary</span></p>
+        <p>&copy; 2026 LogKerja &bull; Copyright <span class="font-bold text-slate-600">@Mochamad Fuad Asyhary</span>[cite: 5]</p>
     </footer>
 
     <!-- Mobile Bottom Nav -->    
@@ -215,6 +229,55 @@
         </button>
     </nav>
 
+    <!-- Modal Inject Data Excel -->
+    <div id="inject-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden overflow-y-auto">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden border border-slate-100 my-8">
+            <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-emerald-50 to-teal-50/30">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-emerald-600 text-white rounded-xl flex items-center justify-center shadow-md">
+                        <i class="fa-solid fa-file-excel text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base text-slate-900">Inject Data Program dari Excel</h3>
+                        <p class="text-xs text-slate-500">Unggah file Excel (.xlsx) atau CSV untuk memasukkan banyak data sekaligus.</p>
+                    </div>
+                </div>
+                <button onclick="closeInjectModal()" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-500 flex items-center justify-center shadow-sm"><i class="fa-solid fa-xmark text-xs"></i></button>
+            </div>
+            
+            <div class="p-6 space-y-6">
+                <!-- Download Template Button -->
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 flex items-center justify-between">
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-xs">Butuh Template Excel?</h4>
+                        <p class="text-[11px] text-slate-500 mt-0.5">Download file contoh format untuk inject data program.</p>
+                    </div>
+                    <button onclick="downloadExcelTemplate()" class="px-3.5 py-2 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center space-x-1.5">
+                        <i class="fa-solid fa-download text-emerald-600 text-[11px]"></i><span>Download Template</span>
+                    </button>
+                </div>
+
+                <!-- File Input Area -->
+                <div>
+                    <label class="block text-[11px] font-bold uppercase text-slate-400 mb-2">Pilih File Excel / CSV</label>
+                    <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" class="w-full text-xs text-slate-500 file:mr-4 file:py-3 file:px-4 file:rounded-2xl file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer border border-slate-200 rounded-2xl p-2 bg-slate-50">
+                </div>
+
+                <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100 text-blue-800 text-[11px] space-y-1">
+                    <p class="font-bold"><i class="fa-solid fa-circle-info mr-1"></i> Informasi Format Kolom Excel:</p>
+                    <p>Kolom wajib: <code>programName</code>, <code>moduleName</code>, <code>description</code>, <code>tableName</code>, <code>columns</code> (format: <code>NAMA:TIPE:Keterangan;...</code>), <code>flow</code>, <code>logic</code>, <code>createDate</code> (Opsional, format: YYYY-MM-DD).</p>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-end space-x-3">
+                    <button type="button" onclick="closeInjectModal()" class="px-5 py-3 bg-slate-100 text-slate-600 rounded-2xl text-xs font-bold">Batal</button>
+                    <button type="button" onclick="processExcelInject()" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-bold shadow-md shadow-emerald-200 transition-all flex items-center space-x-2">
+                        <i class="fa-solid fa-upload text-xs"></i><span>Proses & Inject Data</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Form (Create / Edit Program) -->
     <div id="program-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden overflow-y-auto">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden border border-slate-100 my-8">
@@ -226,11 +289,18 @@
             <form id="program-form" onsubmit="handleProgramSubmit(event)" class="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
                 <input type="hidden" id="prog-id">
                 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="sm:col-span-2">
                         <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Nama Program / Transaksi</label>
                         <input type="text" id="prog-name" required placeholder="Contoh: ZSD_REPORT_PENJUALAN" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
                     </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Tanggal Buat (Create Date)</label>
+                        <input type="date" id="prog-date" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Modul / Kategori</label>
                         <select id="prog-module" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -238,11 +308,10 @@
                             <option value="BW SAP">BW SAP</option><option value="ABAP Custom">ABAP Custom</option><option value="Interface API">Interface API</option><option value="Lainnya">Lainnya</option>
                         </select>
                     </div>
-                </div>
-
-                <div>
-                    <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Deskripsi Singkat / Tujuan Program</label>
-                    <textarea id="prog-description" rows="2" placeholder="Jelaskan fungsi utama program ini..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Deskripsi Singkat / Tujuan Program</label>
+                        <input type="text" id="prog-description" placeholder="Jelaskan fungsi utama program ini..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
                 </div>
 
                 <div class="border-t border-slate-100 pt-5">
@@ -278,13 +347,17 @@
         </div>
     </div>
 
-    <!-- Modal Detail Dokumen Program -->
+    <!-- Modal Detail Dokumen Program (View Table & Detail Table) -->
     <div id="detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden overflow-y-auto">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden border border-slate-100 my-8">
             <div class="p-6 border-b flex items-center justify-between bg-gradient-to-r from-slate-50 to-blue-50/30">
                 <div>
-                    <span id="detail-module-badge" class="text-[10px] font-bold uppercase text-blue-600">Modul</span>
-                    <h3 id="detail-prog-name" class="font-extrabold text-slate-900 text-base font-mono"></h3>
+                    <div class="flex items-center space-x-2">
+                        <span id="detail-module-badge" class="text-[10px] font-bold uppercase text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full">Modul</span>
+                        <!-- TAMPILAN CREATE DATE DI HEADER DETAIL -->
+                        <span id="detail-create-date" class="text-[10px] font-semibold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-md"><i class="fa-solid fa-calendar-days mr-1"></i></span>
+                    </div>
+                    <h3 id="detail-prog-name" class="font-extrabold text-slate-900 text-base font-mono mt-1"></h3>
                 </div>
                 <button onclick="closeDetailModal()" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-500 flex items-center justify-center"><i class="fa-solid fa-xmark text-xs"></i></button>
             </div>
@@ -295,8 +368,9 @@
                     <p id="detail-description" class="text-slate-600 bg-slate-50 p-4 rounded-2xl leading-relaxed border border-slate-100"></p>
                 </div>
 
+                <!-- VIEW TABLE & DETAIL TABLE STRUKTUR KOLOM DATABASE -->
                 <div>
-                    <h4 class="font-bold text-slate-900 text-xs uppercase mb-3"><i class="fa-solid fa-table mr-1.5 text-blue-600"></i> Struktur Tabel & Kolom</h4>
+                    <h4 class="font-bold text-slate-900 text-xs uppercase mb-3"><i class="fa-solid fa-table mr-1.5 text-blue-600"></i> Struktur Tabel & Kolom (View Table)</h4>
                     <div id="detail-tables-container" class="space-y-4"></div>
                 </div>
 
@@ -395,7 +469,6 @@
             const toggleBtn = document.getElementById('toggle-drive-btn');
 
             if (isDriveVisible) {
-                // Tampilkan Google Drive, Sembunyikan Dokumen Program Lokal
                 driveSection.classList.remove('hidden');
                 localSection.classList.add('hidden');
 
@@ -408,7 +481,6 @@
                     iframe.src = `https://drive.google.com/embeddedfolderview?id=${currentFolderId}#list`;
                 }
             } else {
-                // Sembunyikan Google Drive, Tampilkan Kembali Dokumen Program Lokal
                 driveSection.classList.add('hidden');
                 localSection.classList.remove('hidden');
 
@@ -465,6 +537,166 @@
             document.getElementById('drive-iframe').src = `https://drive.google.com/embeddedfolderview?id=${currentFolderId}#list`;
         }
 
+        // --- EKSPOR EXCEL & TEMPLATE ---
+        function exportProgramsToExcel() {
+            if (!programsData || programsData.length === 0) {
+                alert('Tidak ada data dokumen program untuk diekspor.');
+                return;
+            }
+
+            const exportRows = [];
+            programsData.forEach(item => {
+                const tables = item.tables || [];
+                if (tables.length === 0) {
+                    exportRows.push({
+                        "Nama Program": item.programName || '',
+                        "Modul": item.moduleName || '',
+                        "Tanggal Buat": item.createDate || '',
+                        "Deskripsi": item.description || '',
+                        "Nama Tabel": '-',
+                        "Kolom Tabel": '-',
+                        "Flow Program": item.flow || '',
+                        "Logika Bisnis": item.logic || ''
+                    });
+                } else {
+                    tables.forEach(t => {
+                        const colsStr = (t.columns || []).map(c => `${c.columnName}:${c.dataType}:${c.description || ''}`).join('; ');
+                        exportRows.push({
+                            "Nama Program": item.programName || '',
+                            "Modul": item.moduleName || '',
+                            "Tanggal Buat": item.createDate || '',
+                            "Deskripsi": item.description || '',
+                            "Nama Tabel": t.tableName || '',
+                            "Kolom Tabel": colsStr,
+                            "Flow Program": item.flow || '',
+                            "Logika Bisnis": item.logic || ''
+                        });
+                    });
+                }
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(exportRows);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Dokumen Program");
+            XLSX.writeFile(workbook, "Daftar_Dokumen_Program.xlsx");
+        }
+
+        function downloadExcelTemplate() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const templateData = [
+                {
+                    programName: "ZSD_REPORT_PENJUALAN",
+                    moduleName: "SD SAP",
+                    description: "Program laporan rekapitulasi penjualan cabang",
+                    createDate: todayStr,
+                    tableName: "ZT_SALES_HDR",
+                    columns: "KODE_CABANG:CHAR:Kode Cabang; TOTAL_SALES:CURR:Total Penjualan",
+                    flow: "1. Ambil parameter selection-screen\n2. Query database",
+                    logic: "- Validasi otorisasi user\n- Kalkulasi total per cabang"
+                }
+            ];
+            const worksheet = XLSX.utils.json_to_sheet(templateData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Template Program");
+            XLSX.writeFile(workbook, "Template_Inject_Dokumen_Program.xlsx");
+        }
+
+        // --- INJECT DATA EXCEL FUNCTIONS ---
+        function openInjectModal() {
+            document.getElementById('excel-file-input').value = '';
+            document.getElementById('inject-modal').classList.remove('hidden');
+        }
+
+        function closeInjectModal() {
+            document.getElementById('inject-modal').classList.add('hidden');
+        }
+
+        async function processExcelInject() {
+            const fileInput = document.getElementById('excel-file-input');
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert('Silakan pilih file Excel (.xlsx / .csv) terlebih dahulu.');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            showLoader("Membaca & Meng-inject Data...");
+
+            reader.onload = async function (e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const rows = XLSX.utils.sheet_to_json(worksheet);
+
+                    if (rows.length === 0) {
+                        hideLoader();
+                        alert('File Excel kosong atau format tidak sesuai.');
+                        return;
+                    }
+
+                    const fm = window.firebaseModules;
+                    let successCount = 0;
+                    const todayStr = new Date().toISOString().split('T')[0];
+
+                    for (let row of rows) {
+                        const progName = row.programName || row['Nama Program'] || 'Z_CUSTOM_PROGRAM';
+                        const modName = row.moduleName || row['Modul'] || 'FICO SAP';
+                        const desc = row.description || row['Deskripsi'] || '';
+                        const createDate = row.createDate || row['Tanggal Buat'] || todayStr;
+                        const tName = row.tableName || row['Nama Tabel'] || 'ZT_CUSTOM_TABLE';
+                        const colsRaw = row.columns || row['Kolom Tabel'] || row['Kolom'] || '';
+                        const flow = row.flow || row['Flow Program'] || '';
+                        const logic = row.logic || row['Logika Bisnis'] || '';
+
+                        const columns = [];
+                        if (colsRaw) {
+                            const parts = String(colsRaw).split(';');
+                            parts.forEach(p => {
+                                const sub = p.split(':');
+                                if (sub.length >= 1) {
+                                    columns.push({
+                                        columnName: sub[0].trim(),
+                                        dataType: sub[1] ? sub[1].trim() : 'CHAR',
+                                        description: sub[2] ? sub[2].trim() : ''
+                                    });
+                                }
+                            });
+                        }
+                        if (columns.length === 0) {
+                            columns.push({ columnName: 'MANDT', dataType: 'CLNT', description: 'Client' });
+                        }
+
+                        const payload = {
+                            programName: String(progName).trim(),
+                            moduleName: String(modName).trim(),
+                            description: String(desc).trim(),
+                            createDate: String(createDate).trim(),
+                            tables: [{ tableName: String(tName).trim(), columns: columns }],
+                            flow: String(flow).trim(),
+                            logic: String(logic).trim(),
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString()
+                        };
+
+                        await fm.addDoc(fm.collection(db, 'users', currentUserId, 'program_docs'), payload);
+                        successCount++;
+                    }
+
+                    hideLoader();
+                    closeInjectModal();
+                    alert(`Berhasil meng-inject ${successCount} dokumen program ke database!`);
+                } catch (err) {
+                    hideLoader();
+                    alert('Gagal memproses file Excel: ' + err.message);
+                }
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
         // --- LOCAL PROGRAM DOCUMENTS CRUD FUNCTIONS ---
         function renderProgramsList(data) {
             const container = document.getElementById('program-list-container');
@@ -477,7 +709,7 @@
                             <i class="fa-solid fa-folder-open"></i>
                         </div>
                         <h4 class="font-bold text-slate-800 text-sm">Belum Ada Dokumen Program</h4>
-                        <p class="text-xs text-slate-400 max-w-sm mx-auto">Klik tombol "Tambah Dokumen Program" di atas untuk membuat dokumentasi baru.</p>
+                        <p class="text-xs text-slate-400 max-w-sm mx-auto">Klik tombol "Tambah Dokumen Program" atau "Inject Data Excel" di atas.</p>
                     </div>
                 `;
                 return;
@@ -485,6 +717,7 @@
 
             container.innerHTML = data.map(item => {
                 const tables = item.tables || [];
+                const createDate = item.createDate || 'N/A';
                 return `
                     <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all space-y-4">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
@@ -493,9 +726,11 @@
                                     <i class="fa-solid fa-code text-sm"></i>
                                 </div>
                                 <div>
-                                    <div class="flex items-center space-x-2">
+                                    <div class="flex items-center space-x-2 flex-wrap gap-1">
                                         <h3 class="font-extrabold text-slate-900 text-sm font-mono">${escapeHtml(item.programName)}</h3>
                                         <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-600">${escapeHtml(item.moduleName)}</span>
+                                        <!-- TAMPILAN CREATE DATE DI KARTU LIST -->
+                                        <span class="text-[10px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md"><i class="fa-solid fa-calendar-days mr-1"></i>${escapeHtml(createDate)}</span>
                                     </div>
                                     <p class="text-xs text-slate-500 mt-0.5">${escapeHtml(item.description || 'Tidak ada deskripsi')}</p>
                                 </div>
@@ -536,7 +771,8 @@
             const filtered = programsData.filter(i => 
                 (i.programName && i.programName.toLowerCase().includes(keyword)) ||
                 (i.moduleName && i.moduleName.toLowerCase().includes(keyword)) ||
-                (i.description && i.description.toLowerCase().includes(keyword))
+                (i.description && i.description.toLowerCase().includes(keyword)) ||
+                (i.createDate && i.createDate.toLowerCase().includes(keyword))
             );
             renderProgramsList(filtered);
         }
@@ -603,6 +839,9 @@
             document.getElementById('prog-logic').value = '';
             document.getElementById('tables-container').innerHTML = '';
 
+            const todayStr = new Date().toISOString().split('T')[0];
+            document.getElementById('prog-date').value = todayStr;
+
             if (mode === 'create') {
                 document.getElementById('modal-title').textContent = 'Tambah Dokumen Program';
                 addTableBlock();
@@ -614,6 +853,7 @@
                     document.getElementById('prog-name').value = item.programName || '';
                     document.getElementById('prog-module').value = item.moduleName || 'FICO SAP';
                     document.getElementById('prog-description').value = item.description || '';
+                    document.getElementById('prog-date').value = item.createDate || todayStr;
                     document.getElementById('prog-flow').value = item.flow || '';
                     document.getElementById('prog-logic').value = item.logic || '';
 
@@ -659,6 +899,7 @@
                 programName: document.getElementById('prog-name').value.trim(),
                 moduleName: document.getElementById('prog-module').value,
                 description: document.getElementById('prog-description').value.trim(),
+                createDate: document.getElementById('prog-date').value,
                 tables: tables,
                 flow: document.getElementById('prog-flow').value.trim(),
                 logic: document.getElementById('prog-logic').value.trim(),
@@ -709,6 +950,10 @@
 
             document.getElementById('detail-prog-name').textContent = item.programName;
             document.getElementById('detail-module-badge').textContent = item.moduleName;
+            
+            // TAMPILAN CREATE DATE DI HEADER MODAL DETAIL (VIEW TABLE / DETAIL TABLE)
+            document.getElementById('detail-create-date').innerHTML = `<i class="fa-solid fa-calendar-days mr-1"></i> ${escapeHtml(item.createDate || 'N/A')}`;
+            
             document.getElementById('detail-description').textContent = item.description || 'Tidak ada deskripsi.';
             document.getElementById('detail-flow').textContent = item.flow || 'Tidak ada dokumentasi flow.';
             document.getElementById('detail-logic').textContent = item.logic || 'Tidak ada dokumentasi logika bisnis.';
@@ -721,8 +966,13 @@
             } else {
                 tablesContainer.innerHTML = tables.map(t => `
                     <div class="bg-slate-50 rounded-2xl border border-slate-200/80 overflow-hidden">
-                        <div class="p-3.5 bg-blue-50/50 border-b border-slate-200/60 font-bold text-xs text-slate-900 font-mono flex items-center">
-                            <i class="fa-solid fa-table text-blue-600 mr-2"></i> ${escapeHtml(t.tableName)}
+                        <div class="p-3.5 bg-blue-50/50 border-b border-slate-200/60 font-bold text-xs text-slate-900 font-mono flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i class="fa-solid fa-table text-blue-600 mr-2"></i> ${escapeHtml(t.tableName)}
+                            </div>
+                            <span class="text-[10px] font-semibold text-slate-500 bg-white px-2.5 py-0.5 rounded-md border border-slate-200">
+                                <i class="fa-solid fa-calendar-days mr-1"></i> Dibuat: ${escapeHtml(item.createDate || 'N/A')}
+                            </span>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">

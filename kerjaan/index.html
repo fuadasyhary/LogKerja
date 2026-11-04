@@ -8,9 +8,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Library SheetJS untuk membaca file Excel (.xlsx / .xls / .csv) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body class="bg-[#f8fafc] text-slate-800 font-sans antialiased min-h-screen flex flex-col pb-20 md:pb-0">
-
     <!-- Global Loader -->
     <div id="global-loader" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex flex-col items-center justify-center hidden">
         <div class="bg-white p-6 rounded-3xl shadow-2xl flex flex-col items-center space-y-4 max-w-xs w-full mx-4 border border-slate-100 animate-pulse">
@@ -67,6 +68,10 @@
             </div>
 
             <div class="flex items-center space-x-3">
+                <!-- Tombol Inject Data Excel (Di sebelah kiri Ekspor Excel) -->
+                <button onclick="openInjectModal()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-emerald-200 flex items-center space-x-2">
+                    <i class="fa-solid fa-file-excel text-xs"></i><span>Inject Data Excel</span>
+                </button>
                 <button onclick="openLogModal()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-200 flex items-center space-x-2">
                     <i class="fa-solid fa-plus text-xs"></i><span>Tambah Kerjaan</span>
                 </button>
@@ -86,6 +91,7 @@
                 <p id="total-logs-found-label" class="text-xs text-slate-500 mt-1">0 data ditemukan</p>
             </div>
             <div class="flex items-center space-x-3">
+
                 <button onclick="exportToExcel()" class="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center space-x-2">
                     <i class="fa-solid fa-file-excel text-emerald-600"></i><span>Ekspor Excel</span>
                 </button>
@@ -186,6 +192,55 @@
             <i class="fa-solid fa-user text-base mb-0.5"></i><span class="text-[10px] font-bold">Profil</span>
         </button>
     </nav>
+
+    <!-- Modal Inject Data Excel -->
+    <div id="inject-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden overflow-y-auto">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden border border-slate-100 my-8">
+            <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-emerald-50 to-teal-50/30">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-emerald-600 text-white rounded-xl flex items-center justify-center shadow-md">
+                        <i class="fa-solid fa-file-excel text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base text-slate-900">Inject Data Kerjaan dari Excel</h3>
+                        <p class="text-xs text-slate-500">Unggah file Excel (.xlsx) atau CSV untuk memasukkan banyak data sekaligus.</p>
+                    </div>
+                </div>
+                <button onclick="closeInjectModal()" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-500 flex items-center justify-center shadow-sm"><i class="fa-solid fa-xmark text-xs"></i></button>
+            </div>
+            
+            <div class="p-6 space-y-6">
+                <!-- Download Template Button -->
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 flex items-center justify-between">
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-xs">Butuh Template Excel?</h4>
+                        <p class="text-[11px] text-slate-500 mt-0.5">Download file contoh format untuk inject data kerjaan.</p>
+                    </div>
+                    <button onclick="downloadExcelTemplate()" class="px-3.5 py-2 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center space-x-1.5">
+                        <i class="fa-solid fa-download text-emerald-600 text-[11px]"></i><span>Download Template</span>
+                    </button>
+                </div>
+
+                <!-- File Input Area -->
+                <div>
+                    <label class="block text-[11px] font-bold uppercase text-slate-400 mb-2">Pilih File Excel / CSV</label>
+                    <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" class="w-full text-xs text-slate-500 file:mr-4 file:py-3 file:px-4 file:rounded-2xl file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer border border-slate-200 rounded-2xl p-2 bg-slate-50">
+                </div>
+
+                <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100 text-blue-800 text-[11px] space-y-1">
+                    <p class="font-bold"><i class="fa-solid fa-circle-info mr-1"></i> Informasi Format Kolom Excel:</p>
+                    <p>Kolom: <code>title</code>, <code>programName</code>, <code>moduleName</code>, <code>category</code>, <code>pic</code>, <code>date</code> (YYYY-MM-DD), <code>completionDate</code>, <code>deadline</code>, <code>priority</code> (High/Medium/Low), <code>status</code> (Done/In Progress/To Do/Pending / Hold/Cancelled), <code>progress</code> (0-100), <code>description</code>.</p>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-end space-x-3">
+                    <button type="button" onclick="closeInjectModal()" class="px-5 py-3 bg-slate-100 text-slate-600 rounded-2xl text-xs font-bold">Batal</button>
+                    <button type="button" onclick="processExcelInject()" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-bold shadow-md shadow-emerald-200 transition-all flex items-center space-x-2">
+                        <i class="fa-solid fa-upload text-xs"></i><span>Proses & Inject Data</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal Form Tambah/Edit Log Kerjaan -->
     <div id="log-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden overflow-y-auto">
@@ -371,7 +426,6 @@
                 </div>
             </div>
 
-            <!-- Tombol Edit & Tutup di Modal Detail -->
             <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
                 <button id="detail-edit-btn" onclick="" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs shadow-md transition-all hidden items-center space-x-2">
                     <i class="fa-solid fa-pen text-[11px]"></i><span>Edit Kerjaan</span>
@@ -381,7 +435,7 @@
         </div>
     </div>
 
-    <!-- Lightbox (Tanpa tombol exit, klik di luar gambar untuk menutup) -->
+    <!-- Lightbox -->
     <div id="lightbox-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden cursor-pointer" onclick="closeLightbox()">
         <div class="relative cursor-default" onclick="event.stopPropagation()">
             <img id="lightbox-img" src="" class="max-w-[95vw] max-h-[92vh] rounded-2xl shadow-2xl object-contain">
@@ -529,6 +583,105 @@
             }).join('');
         }
 
+        // --- INJECT DATA EXCEL FUNCTIONS ---
+        function openInjectModal() {
+            document.getElementById('excel-file-input').value = '';
+            document.getElementById('inject-modal').classList.remove('hidden');
+        }
+
+        function closeInjectModal() {
+            document.getElementById('inject-modal').classList.add('hidden');
+        }
+
+        function downloadExcelTemplate() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const templateData = [
+                {
+                    title: "Implementasi ZFI029 Laporan Keuangan",
+                    programName: "ZFI_REPORT_KEU",
+                    moduleName: "FICO SAP",
+                    category: "Report ABAP",
+                    pic: "Pak Yahya",
+                    date: todayStr,
+                    completionDate: todayStr,
+                    deadline: todayStr,
+                    priority: "High",
+                    status: "Done",
+                    progress: 100,
+                    description: "Membuat report custom untuk laporan keuangan."
+                }
+            ];
+            const worksheet = XLSX.utils.json_to_sheet(templateData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Template Kerjaan");
+            XLSX.writeFile(workbook, "Template_Inject_Log_Kerjaan.xlsx");
+        }
+
+        async function processExcelInject() {
+            const fileInput = document.getElementById('excel-file-input');
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert('Silakan pilih file Excel (.xlsx / .csv) terlebih dahulu.');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            showLoader("Membaca & Meng-inject Data...");
+
+            reader.onload = async function (e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const rows = XLSX.utils.sheet_to_json(worksheet);
+
+                    if (rows.length === 0) {
+                        hideLoader();
+                        alert('File Excel kosong atau format tidak sesuai.');
+                        return;
+                    }
+
+                    const fm = window.firebaseModules;
+                    let successCount = 0;
+                    const todayStr = new Date().toISOString().split('T')[0];
+
+                    for (let row of rows) {
+                        const payload = {
+                            title: String(row.title || row['Judul'] || 'Tugas Baru').trim(),
+                            programName: String(row.programName || row['Program'] || '').trim(),
+                            moduleName: String(row.moduleName || row['Modul'] || 'FICO SAP').trim(),
+                            category: String(row.category || row['Kategori'] || 'Report ABAP').trim(),
+                            pic: String(row.pic || row['PIC'] || '').trim(),
+                            date: String(row.date || row['Tanggal'] || todayStr).trim(),
+                            completionDate: String(row.completionDate || row['Selesai'] || '').trim(),
+                            deadline: String(row.deadline || row['Deadline'] || todayStr).trim(),
+                            priority: String(row.priority || row['Prioritas'] || 'Medium').trim(),
+                            status: String(row.status || row['Status'] || 'Done').trim(),
+                            progress: parseInt(row.progress !== undefined ? row.progress : 100),
+                            description: String(row.description || row['Deskripsi'] || '').trim(),
+                            requirements: [],
+                            testing: [],
+                            updatedAt: new Date().toISOString()
+                        };
+
+                        await fm.addDoc(fm.collection(db, 'users', currentUser.uid, 'work_logs'), payload);
+                        successCount++;
+                    }
+
+                    hideLoader();
+                    closeInjectModal();
+                    alert(`Berhasil meng-inject ${successCount} data kerjaan ke database!`);
+                } catch (err) {
+                    hideLoader();
+                    alert('Gagal memproses file Excel: ' + err.message);
+                }
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
         async function processAndCompressImage(file) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -596,7 +749,7 @@
                     document.getElementById('log-title').value = item.title;
                     document.getElementById('log-program-name').value = item.programName || '';
                     document.getElementById('log-module-name').value = item.moduleName || 'FICO SAP';
-                    document.getElementById('log-category').value = item.category || 'SAP BW';
+                    document.getElementById('log-category').value = item.category || 'Report ABAP';
                     document.getElementById('log-pic').value = item.pic || '';
                     document.getElementById('log-date').value = item.date;
                     document.getElementById('log-completion-date').value = item.completionDate || '';
@@ -769,5 +922,6 @@
         }
         function escapeHtml(str) { return (str||'').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
     </script>
+    
 </body>
 </html>
