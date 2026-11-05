@@ -68,11 +68,12 @@
             </div>
 
             <div class="flex items-center space-x-3">
-                <!-- Tombol Inject Data Excel (Di sebelah kiri Ekspor Excel) -->
-                <button onclick="openInjectModal()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-emerald-200 flex items-center space-x-2">
+                <!-- Tombol Inject Data Excel (Default hidden agar tidak kedip di mode tamu) -->
+                <button id="btn-inject-excel" onclick="openInjectModal()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-emerald-200 flex items-center space-x-2 hidden">
                     <i class="fa-solid fa-file-excel text-xs"></i><span>Inject Data Excel</span>
                 </button>
-                <button onclick="openLogModal()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-200 flex items-center space-x-2">
+                <!-- Tombol Tambah Kerjaan (Default hidden agar tidak kedip di mode tamu) -->
+                <button id="btn-add-log" onclick="openLogModal()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-200 flex items-center space-x-2 hidden">
                     <i class="fa-solid fa-plus text-xs"></i><span>Tambah Kerjaan</span>
                 </button>
                 <button onclick="handleLogout()" class="w-9 h-9 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-600 rounded-xl flex items-center justify-center text-xs transition-all" title="Keluar">
@@ -91,7 +92,6 @@
                 <p id="total-logs-found-label" class="text-xs text-slate-500 mt-1">0 data ditemukan</p>
             </div>
             <div class="flex items-center space-x-3">
-
                 <button onclick="exportToExcel()" class="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center space-x-2">
                     <i class="fa-solid fa-file-excel text-emerald-600"></i><span>Ekspor Excel</span>
                 </button>
@@ -174,7 +174,7 @@
 
     <!-- Footer -->
     <footer class="py-4 text-center text-xs text-slate-400 border-t border-slate-100 bg-white mt-auto mb-16 md:mb-0">
-        <p>&copy; 2026 LogKerja &bull; Copyright <span class="font-bold text-slate-600">@Mochamad Fuad Asyhary</span></p>
+        <p>&copy; 2026 LogKerja &bull; Copyright <span class="font-bold text-slate-600">@Mochamad Fuad Asyhary</span>[cite: 5]</p>
     </footer>
 
     <!-- Mobile Bottom Nav -->
@@ -477,10 +477,13 @@
 
             const guestUid = localStorage.getItem('guest_target_uid');
             if (guestUid) {
+                // Mode Tamu: Tombol tetap tersembunyi tanpa kedip karena sudah di-set hidden di HTML
                 setupRealtimeListeners(guestUid);
-                const btnAdd = document.querySelector('button[onclick="openLogModal()"]');
-                if (btnAdd) btnAdd.style.display = 'none';
             } else {
+                // User Login Biasa: Tampilkan kembali tombol aksi
+                document.getElementById('btn-add-log')?.classList.remove('hidden');
+                document.getElementById('btn-inject-excel')?.classList.remove('hidden');
+
                 fm.onAuthStateChanged(auth, (user) => {
                     if (user) {
                         currentUser = user;
@@ -646,6 +649,7 @@
                     const fm = window.firebaseModules;
                     let successCount = 0;
                     const todayStr = new Date().toISOString().split('T')[0];
+                    const targetUid = currentUser ? currentUser.uid : localStorage.getItem('guest_target_uid');
 
                     for (let row of rows) {
                         const payload = {
@@ -666,7 +670,7 @@
                             updatedAt: new Date().toISOString()
                         };
 
-                        await fm.addDoc(fm.collection(db, 'users', currentUser.uid, 'work_logs'), payload);
+                        await fm.addDoc(fm.collection(db, 'users', targetUid, 'work_logs'), payload);
                         successCount++;
                     }
 
@@ -855,6 +859,7 @@
             showLoader("Menyimpan Data...");
             const fm = window.firebaseModules;
             const id = document.getElementById('log-id').value;
+            const targetUid = currentUser ? currentUser.uid : localStorage.getItem('guest_target_uid');
             const payload = {
                 title: document.getElementById('log-title').value,
                 programName: document.getElementById('log-program-name').value,
@@ -873,8 +878,8 @@
                 updatedAt: new Date().toISOString()
             };
             try {
-                if (id) await fm.updateDoc(fm.doc(db, 'users', currentUser.uid, 'work_logs', id), payload);
-                else await fm.addDoc(fm.collection(db, 'users', currentUser.uid, 'work_logs'), payload);
+                if (id) await fm.updateDoc(fm.doc(db, 'users', targetUid, 'work_logs', id), payload);
+                else await fm.addDoc(fm.collection(db, 'users', targetUid, 'work_logs'), payload);
                 hideLoader(); closeLogModal();
             } catch(err) { hideLoader(); alert('Gagal menyimpan: ' + err.message); }
         }
@@ -883,7 +888,8 @@
             if (!confirm('Hapus data kerjaan ini?')) return;
             showLoader("Menghapus...");
             const fm = window.firebaseModules;
-            await fm.deleteDoc(fm.doc(db, 'users', currentUser.uid, 'work_logs', id));
+            const targetUid = currentUser ? currentUser.uid : localStorage.getItem('guest_target_uid');
+            await fm.deleteDoc(fm.doc(db, 'users', targetUid, 'work_logs', id));
             hideLoader();
         }
 
@@ -922,6 +928,5 @@
         }
         function escapeHtml(str) { return (str||'').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
     </script>
-    
 </body>
 </html>

@@ -67,17 +67,14 @@
             </div>
 
             <div class="flex items-center space-x-3">
-                <!-- Tombol Inject Data Excel -->
-                <button onclick="openInjectModal()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center space-x-2 shadow-md shadow-emerald-200 transition-all">
+                <button id="btn-inject-excel" onclick="openInjectModal()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center space-x-2 shadow-md shadow-emerald-200 transition-all hidden">
                     <i class="fa-solid fa-file-excel text-xs"></i><span>Inject Data Excel</span>
                 </button>
 
-                <!-- Tombol Tambah Dokumen Program -->
-                <button onclick="openProgramModal('create')" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center space-x-2 shadow-md shadow-blue-200 transition-all">
+                <button id="btn-add-program" onclick="openProgramModal('create')" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center space-x-2 shadow-md shadow-blue-200 transition-all hidden">
                     <i class="fa-solid fa-plus text-xs"></i><span>Tambah Dokumen Program</span>
                 </button>
                 
-                <!-- Tombol Keluar -->
                 <button onclick="handleLogout()" class="w-9 h-9 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-600 rounded-xl flex items-center justify-center text-xs transition-all" title="Keluar">
                     <i class="fa-solid fa-right-from-bracket"></i>
                 </button>
@@ -87,19 +84,16 @@
 
     <!-- Main Content -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        <!-- Top Bar Header -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm">
             <div>
-                <h2 class="text-base font-extrabold text-slate-900">Dokumen Program & Struktur Database</h2>
-                <p class="text-xs text-slate-500 mt-1">Kelola spesifikasi program, multi-tabel beserta kolomnya, flow program, dan logika bisnis.</p>
+                <h2 class="text-base font-extrabold text-slate-900">Dokumen Program & Struktur Database 5 Tingkat</h2>
+                <p class="text-xs text-slate-500 mt-1">Kelola spesifikasi program, multi-tabel, serta hirarki sub-tabel hingga 5 tingkat kedalaman.</p>
             </div>
             <div class="flex flex-wrap items-center gap-3">
-                <!-- Tombol Ekspor Excel -->
                 <button onclick="exportProgramsToExcel()" class="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold flex items-center space-x-2 shadow-sm transition-all">
                     <i class="fa-solid fa-file-excel text-emerald-600 text-xs"></i><span>Ekspor Excel</span>
                 </button>
 
-                <!-- Tombol Toggle Google Drive -->
                 <button id="toggle-drive-btn" onclick="toggleGoogleDrive()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center space-x-2 shadow-sm transition-all">
                     <span id="drive-dot-indicator" class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
                     <span id="drive-btn-text">Not Live Sync Google Drive</span>
@@ -191,15 +185,13 @@
 
         <!-- Bagian Dokumen Program & Pencarian Lokal -->
         <div id="local-documents-section" class="space-y-6 transition-all">
-            <!-- Search & Filter Bar -->
             <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
                 <div class="relative flex-1">
                     <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                    <input type="text" id="search-input" oninput="filterPrograms()" placeholder="Cari dokumen program, multi-tabel, atau deskripsi..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="text" id="search-input" oninput="filterPrograms()" placeholder="Cari dokumen program, sub-tabel, atau deskripsi..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
             </div>
 
-            <!-- Program Cards / List Container -->
             <div id="program-list-container" class="grid grid-cols-1 gap-6">
                 <div class="bg-white p-8 rounded-3xl border border-slate-200 text-center text-slate-400 text-xs">
                     Memuat data dokumen program...
@@ -238,34 +230,32 @@
                         <i class="fa-solid fa-file-excel text-sm"></i>
                     </div>
                     <div>
-                        <h3 class="font-bold text-base text-slate-900">Inject Data Program dari Excel</h3>
-                        <p class="text-xs text-slate-500">Unggah file Excel (.xlsx) atau CSV untuk memasukkan banyak data sekaligus.</p>
+                        <h3 class="font-bold text-base text-slate-900">Inject Data Program (5 Tingkat)</h3>
+                        <p class="text-xs text-slate-500">Unggah file Excel (.xlsx) dengan struktur hingga 5 tingkat sub-tabel.</p>
                     </div>
                 </div>
                 <button onclick="closeInjectModal()" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-500 flex items-center justify-center shadow-sm"><i class="fa-solid fa-xmark text-xs"></i></button>
             </div>
             
             <div class="p-6 space-y-6">
-                <!-- Download Template Button -->
                 <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 flex items-center justify-between">
                     <div>
                         <h4 class="font-bold text-slate-800 text-xs">Butuh Template Excel?</h4>
-                        <p class="text-[11px] text-slate-500 mt-0.5">Download file contoh format untuk inject data program.</p>
+                        <p class="text-[11px] text-slate-500 mt-0.5">Download file contoh format untuk inject 5 tingkat.</p>
                     </div>
                     <button onclick="downloadExcelTemplate()" class="px-3.5 py-2 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center space-x-1.5">
                         <i class="fa-solid fa-download text-emerald-600 text-[11px]"></i><span>Download Template</span>
                     </button>
                 </div>
 
-                <!-- File Input Area -->
                 <div>
                     <label class="block text-[11px] font-bold uppercase text-slate-400 mb-2">Pilih File Excel / CSV</label>
                     <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" class="w-full text-xs text-slate-500 file:mr-4 file:py-3 file:px-4 file:rounded-2xl file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer border border-slate-200 rounded-2xl p-2 bg-slate-50">
                 </div>
 
                 <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100 text-blue-800 text-[11px] space-y-1">
-                    <p class="font-bold"><i class="fa-solid fa-circle-info mr-1"></i> Informasi Format Kolom Excel:</p>
-                    <p>Kolom wajib: <code>programName</code>, <code>moduleName</code>, <code>description</code>, <code>tableName</code>, <code>columns</code> (format: <code>NAMA:TIPE:Keterangan;...</code>), <code>flow</code>, <code>logic</code>, <code>createDate</code> (Opsional, format: YYYY-MM-DD).</p>
+                    <p class="font-bold"><i class="fa-solid fa-circle-info mr-1"></i> Format 5 Tingkat Excel:</p>
+                    <p>Kolom <code>tablesData</code> mendefinisikan Tabel Utama -> Sub-Tabel Tingkat 1 -> Tingkat 2 -> Tingkat 3 -> Tingkat 4.</p>
                 </div>
 
                 <div class="pt-4 border-t border-slate-100 flex items-center justify-end space-x-3">
@@ -278,9 +268,9 @@
         </div>
     </div>
 
-    <!-- Modal Form (Create / Edit Program) -->
+    <!-- Modal Form (Create / Edit Program dengan 5 Tingkat) -->
     <div id="program-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden overflow-y-auto">
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden border border-slate-100 my-8">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-5xl overflow-hidden border border-slate-100 my-8">
             <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 to-blue-50/30">
                 <h3 id="modal-title" class="font-bold text-base text-slate-900">Tambah Dokumen Program</h3>
                 <button onclick="closeProgramModal()" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-500 flex items-center justify-center shadow-sm"><i class="fa-solid fa-xmark text-xs"></i></button>
@@ -317,11 +307,11 @@
                 <div class="border-t border-slate-100 pt-5">
                     <div class="flex items-center justify-between mb-3">
                         <div>
-                            <h4 class="font-bold text-slate-900 text-xs uppercase">Struktur Tabel Database</h4>
-                            <p class="text-[11px] text-slate-400">Anda dapat menambahkan banyak tabel beserta daftar kolom dan tipe datanya.</p>
+                            <h4 class="font-bold text-slate-900 text-xs uppercase">Struktur 5 Tingkat (Tabel & Sub-Tabel Bersarang)</h4>
+                            <p class="text-[11px] text-slate-400">Tambahkan tabel utama, lalu sub-tabel tingkat 1, 2, 3, hingga 4.</p>
                         </div>
                         <button type="button" onclick="addTableBlock()" class="px-3.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5">
-                            <i class="fa-solid fa-table text-[11px]"></i><span>+ Tambah Tabel</span>
+                            <i class="fa-solid fa-table text-[11px]"></i><span>+ Tambah Tabel Utama</span>
                         </button>
                     </div>
 
@@ -331,11 +321,11 @@
                 <div class="border-t border-slate-100 pt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-[11px] font-bold uppercase text-blue-600 mb-1">Flow Program (Alur Eksekusi)</label>
-                        <textarea id="prog-flow" rows="5" placeholder="1. Inisialisasi parameter selection-screen&#10;2. Ambil data dari tabel database&#10;3. Olah data (Looping/Validation)&#10;4. Tampilkan ALV Grid / Output" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 leading-relaxed font-mono"></textarea>
+                        <textarea id="prog-flow" rows="5" placeholder="1. Inisialisasi parameter&#10;2. Ambil data database 5 tingkat&#10;3. ALV Grid Output" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 leading-relaxed font-mono"></textarea>
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold uppercase text-emerald-600 mb-1">Logika Bisnis & Validasi</label>
-                        <textarea id="prog-logic" rows="5" placeholder="- Jika kondisi X terpenuhi, lakukan kalkulasi Y&#10;- Validasi otorisasi user dengan Authority Check&#10;- Penanganan error jika data tidak ditemukan" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 leading-relaxed font-mono"></textarea>
+                        <textarea id="prog-logic" rows="5" placeholder="- Validasi hirarki 5 tingkat&#10;- Authority Check" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 leading-relaxed font-mono"></textarea>
                     </div>
                 </div>
 
@@ -347,14 +337,13 @@
         </div>
     </div>
 
-    <!-- Modal Detail Dokumen Program (View Table & Detail Table) -->
+    <!-- Modal Detail Dokumen Program (View 5 Tingkat) -->
     <div id="detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden overflow-y-auto">
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden border border-slate-100 my-8">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-5xl overflow-hidden border border-slate-100 my-8">
             <div class="p-6 border-b flex items-center justify-between bg-gradient-to-r from-slate-50 to-blue-50/30">
                 <div>
                     <div class="flex items-center space-x-2">
                         <span id="detail-module-badge" class="text-[10px] font-bold uppercase text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full">Modul</span>
-                        <!-- TAMPILAN CREATE DATE DI HEADER DETAIL -->
                         <span id="detail-create-date" class="text-[10px] font-semibold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-md"><i class="fa-solid fa-calendar-days mr-1"></i></span>
                     </div>
                     <h3 id="detail-prog-name" class="font-extrabold text-slate-900 text-base font-mono mt-1"></h3>
@@ -368,9 +357,8 @@
                     <p id="detail-description" class="text-slate-600 bg-slate-50 p-4 rounded-2xl leading-relaxed border border-slate-100"></p>
                 </div>
 
-                <!-- VIEW TABLE & DETAIL TABLE STRUKTUR KOLOM DATABASE -->
                 <div>
-                    <h4 class="font-bold text-slate-900 text-xs uppercase mb-3"><i class="fa-solid fa-table mr-1.5 text-blue-600"></i> Struktur Tabel & Kolom (View Table)</h4>
+                    <h4 class="font-bold text-slate-900 text-xs uppercase mb-3"><i class="fa-solid fa-table mr-1.5 text-blue-600"></i> Struktur Hirarki 5 Tingkat</h4>
                     <div id="detail-tables-container" class="space-y-4"></div>
                 </div>
 
@@ -434,6 +422,9 @@
                 currentUserId = guestUid;
                 setupRealtimeListeners(guestUid);
             } else {
+                document.getElementById('btn-add-program')?.classList.remove('hidden');
+                document.getElementById('btn-inject-excel')?.classList.remove('hidden');
+
                 fm.onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         currentUserId = user.uid;
@@ -459,7 +450,6 @@
             });
         }
 
-        // --- TOGGLE GOOGLE DRIVE & LOCAL DOCUMENTS SECTION ---
         function toggleGoogleDrive() {
             isDriveVisible = !isDriveVisible;
             const driveSection = document.getElementById('google-drive-section');
@@ -490,7 +480,6 @@
             }
         }
 
-        // --- GOOGLE DRIVE INTEGRATION FUNCTIONS ---
         function switchFolder(folderId, folderName) {
             currentFolderId = folderId;
             currentFolderName = folderName;
@@ -537,7 +526,16 @@
             document.getElementById('drive-iframe').src = `https://drive.google.com/embeddedfolderview?id=${currentFolderId}#list`;
         }
 
-        // --- EKSPOR EXCEL & TEMPLATE ---
+        // --- RECURSIVE SERIALIZATION FOR EXCEL (5 TINGKAT) ---
+        function serializeSubTables(subTables) {
+            if (!subTables || subTables.length === 0) return '';
+            return subTables.map(st => {
+                const cols = (st.subColumns || []).map(sc => `${sc.subColName}:${sc.subDataType}:${sc.subDesc||''}`).join(';');
+                const nested = serializeSubTables(st.subTables || []);
+                return `${st.subTableName}#${cols}${nested ? '{' + nested + '}' : ''}`;
+            }).join('{SUB}');
+        }
+
         function exportProgramsToExcel() {
             if (!programsData || programsData.length === 0) {
                 alert('Tidak ada data dokumen program untuk diekspor.');
@@ -547,61 +545,90 @@
             const exportRows = [];
             programsData.forEach(item => {
                 const tables = item.tables || [];
-                if (tables.length === 0) {
-                    exportRows.push({
-                        "Nama Program": item.programName || '',
-                        "Modul": item.moduleName || '',
-                        "Tanggal Buat": item.createDate || '',
-                        "Deskripsi": item.description || '',
-                        "Nama Tabel": '-',
-                        "Kolom Tabel": '-',
-                        "Flow Program": item.flow || '',
-                        "Logika Bisnis": item.logic || ''
-                    });
-                } else {
-                    tables.forEach(t => {
-                        const colsStr = (t.columns || []).map(c => `${c.columnName}:${c.dataType}:${c.description || ''}`).join('; ');
-                        exportRows.push({
-                            "Nama Program": item.programName || '',
-                            "Modul": item.moduleName || '',
-                            "Tanggal Buat": item.createDate || '',
-                            "Deskripsi": item.description || '',
-                            "Nama Tabel": t.tableName || '',
-                            "Kolom Tabel": colsStr,
-                            "Flow Program": item.flow || '',
-                            "Logika Bisnis": item.logic || ''
-                        });
-                    });
-                }
+                const serializedTables = tables.map(t => {
+                    const colsStr = (t.columns || []).map(c => {
+                        const subStr = serializeSubTables(c.subTables || []);
+                        return `${c.columnName}:${c.dataType}:${c.description || ''}${subStr ? '{' + subStr + '}' : ''}`;
+                    }).join(';');
+                    return `${t.tableName}#${colsStr}`;
+                }).join(' ||| ');
+
+                exportRows.push({
+                    "Nama Program": item.programName || '',
+                    "Modul": item.moduleName || '',
+                    "Tanggal Buat": item.createDate || '',
+                    "Deskripsi": item.description || '',
+                    "Total Tabel": tables.length,
+                    "tablesData": serializedTables,
+                    "Flow Program": item.flow || '',
+                    "Logika Bisnis": item.logic || ''
+                });
             });
 
             const worksheet = XLSX.utils.json_to_sheet(exportRows);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Dokumen Program");
-            XLSX.writeFile(workbook, "Daftar_Dokumen_Program.xlsx");
+            XLSX.writeFile(workbook, "Daftar_Dokumen_Program_5Tingkat.xlsx");
         }
 
         function downloadExcelTemplate() {
             const todayStr = new Date().toISOString().split('T')[0];
             const templateData = [
                 {
-                    programName: "ZSD_REPORT_PENJUALAN",
+                    programName: "ZSD_REPORT_5_TINGKAT",
                     moduleName: "SD SAP",
-                    description: "Program laporan rekapitulasi penjualan cabang",
+                    description: "Contoh program struktur 5 tingkat",
                     createDate: todayStr,
-                    tableName: "ZT_SALES_HDR",
-                    columns: "KODE_CABANG:CHAR:Kode Cabang; TOTAL_SALES:CURR:Total Penjualan",
-                    flow: "1. Ambil parameter selection-screen\n2. Query database",
-                    logic: "- Validasi otorisasi user\n- Kalkulasi total per cabang"
+                    tablesData: "ZT_MAIN#COL1:CHAR:Ket1{ST1#SCOL1:CHAR:Ket2{ST2#SCOL2:CHAR:Ket3{ST3#SCOL3:CHAR:Ket4{ST4#SCOL4:CHAR:Ket5}}}}",
+                    flow: "1. Inisialisasi",
+                    logic: "- Validasi"
                 }
             ];
             const worksheet = XLSX.utils.json_to_sheet(templateData);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Template Program");
-            XLSX.writeFile(workbook, "Template_Inject_Dokumen_Program.xlsx");
+            XLSX.writeFile(workbook, "Template_Inject_Dokumen_Program_5Tingkat.xlsx");
         }
 
-        // --- INJECT DATA EXCEL FUNCTIONS ---
+        // --- RECURSIVE PARSER FOR INJECT EXCEL (5 TINGKAT) ---
+        function parseSubTablesRecursive(subRaw) {
+            if (!subRaw) return [];
+            const subTables = [];
+            const subBlocks = subRaw.split('{SUB}');
+            subBlocks.forEach(sb => {
+                if (!sb.trim()) return;
+                const [stName, rest] = sb.split('#');
+                if (!stName) return;
+                const subTableName = stName.trim();
+                let colsPart = rest || '';
+                let nestedSubRaw = '';
+
+                if (rest && rest.includes('{') && rest.includes('}')) {
+                    const openIdx = rest.indexOf('{');
+                    const closeIdx = rest.lastIndexOf('}');
+                    colsPart = rest.substring(0, openIdx);
+                    nestedSubRaw = rest.substring(openIdx + 1, closeIdx);
+                }
+
+                const subColumns = [];
+                if (colsPart) {
+                    colsPart.split(';').forEach(scp => {
+                        if (!scp.trim()) return;
+                        const subSub = scp.split(':');
+                        subColumns.push({
+                            subColName: subSub[0] ? subSub[0].trim() : '',
+                            subDataType: subSub[1] ? subSub[1].trim() : 'CHAR',
+                            subDesc: subSub[2] ? subSub[2].trim() : ''
+                        });
+                    });
+                }
+
+                const subTables = parseSubTablesRecursive(nestedSubRaw);
+                subTables.push({ subTableName, subColumns, subTables });
+            });
+            return subTables;
+        }
+
         function openInjectModal() {
             document.getElementById('excel-file-input').value = '';
             document.getElementById('inject-modal').classList.remove('hidden');
@@ -621,7 +648,7 @@
             const file = fileInput.files[0];
             const reader = new FileReader();
 
-            showLoader("Membaca & Meng-inject Data...");
+            showLoader("Membaca & Meng-inject Data 5 Tingkat...");
 
             reader.onload = async function (e) {
                 try {
@@ -646,27 +673,51 @@
                         const modName = row.moduleName || row['Modul'] || 'FICO SAP';
                         const desc = row.description || row['Deskripsi'] || '';
                         const createDate = row.createDate || row['Tanggal Buat'] || todayStr;
-                        const tName = row.tableName || row['Nama Tabel'] || 'ZT_CUSTOM_TABLE';
-                        const colsRaw = row.columns || row['Kolom Tabel'] || row['Kolom'] || '';
+                        const tablesDataRaw = row.tablesData || row['tablesData'] || '';
                         const flow = row.flow || row['Flow Program'] || '';
                         const logic = row.logic || row['Logika Bisnis'] || '';
 
-                        const columns = [];
-                        if (colsRaw) {
-                            const parts = String(colsRaw).split(';');
-                            parts.forEach(p => {
-                                const sub = p.split(':');
-                                if (sub.length >= 1) {
-                                    columns.push({
-                                        columnName: sub[0].trim(),
-                                        dataType: sub[1] ? sub[1].trim() : 'CHAR',
-                                        description: sub[2] ? sub[2].trim() : ''
-                                    });
+                        const tables = [];
+                        if (tablesDataRaw) {
+                            const tableBlocks = String(tablesDataRaw).split('|||');
+                            tableBlocks.forEach(block => {
+                                const [tName, colsRaw] = block.split('#');
+                                if (tName) {
+                                    const tableName = tName.trim();
+                                    const columns = [];
+                                    if (colsRaw) {
+                                        const colParts = colsRaw.split(';');
+                                        colParts.forEach(cp => {
+                                            if (!cp.trim()) return;
+                                            let colMain = cp;
+                                            let subRaw = '';
+                                            if (cp.includes('{') && cp.includes('}')) {
+                                                const openIdx = cp.indexOf('{');
+                                                const closeIdx = cp.lastIndexOf('}');
+                                                colMain = cp.substring(0, openIdx);
+                                                subRaw = cp.substring(openIdx + 1, closeIdx);
+                                            }
+
+                                            const subTables = parseSubTablesRecursive(subRaw);
+                                            const sub = colMain.split(':');
+                                            columns.push({
+                                                columnName: sub[0] ? sub[0].trim() : '',
+                                                dataType: sub[1] ? sub[1].trim() : 'CHAR',
+                                                description: sub[2] ? sub[2].trim() : '',
+                                                subTables: subTables
+                                            });
+                                        });
+                                    }
+                                    tables.push({ tableName, columns });
                                 }
                             });
                         }
-                        if (columns.length === 0) {
-                            columns.push({ columnName: 'MANDT', dataType: 'CLNT', description: 'Client' });
+
+                        if (tables.length === 0) {
+                            tables.push({
+                                tableName: 'ZT_DEFAULT',
+                                columns: [{ columnName: 'MANDT', dataType: 'CLNT', description: 'Client', subTables: [] }]
+                            });
                         }
 
                         const payload = {
@@ -674,7 +725,7 @@
                             moduleName: String(modName).trim(),
                             description: String(desc).trim(),
                             createDate: String(createDate).trim(),
-                            tables: [{ tableName: String(tName).trim(), columns: columns }],
+                            tables: tables,
                             flow: String(flow).trim(),
                             logic: String(logic).trim(),
                             createdAt: new Date().toISOString(),
@@ -687,7 +738,7 @@
 
                     hideLoader();
                     closeInjectModal();
-                    alert(`Berhasil meng-inject ${successCount} dokumen program ke database!`);
+                    alert(`Berhasil meng-inject ${successCount} dokumen program 5 tingkat ke database!`);
                 } catch (err) {
                     hideLoader();
                     alert('Gagal memproses file Excel: ' + err.message);
@@ -729,7 +780,6 @@
                                     <div class="flex items-center space-x-2 flex-wrap gap-1">
                                         <h3 class="font-extrabold text-slate-900 text-sm font-mono">${escapeHtml(item.programName)}</h3>
                                         <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-600">${escapeHtml(item.moduleName)}</span>
-                                        <!-- TAMPILAN CREATE DATE DI KARTU LIST -->
                                         <span class="text-[10px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md"><i class="fa-solid fa-calendar-days mr-1"></i>${escapeHtml(createDate)}</span>
                                     </div>
                                     <p class="text-xs text-slate-500 mt-0.5">${escapeHtml(item.description || 'Tidak ada deskripsi')}</p>
@@ -751,12 +801,12 @@
                         </div>
 
                         <div>
-                            <span class="text-[10px] font-bold uppercase text-slate-400 block mb-2">Tabel Terkait (${tables.length} Tabel)</span>
+                            <span class="text-[10px] font-bold uppercase text-slate-400 block mb-2">Tabel Utama (${tables.length} Tabel)</span>
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                 ${tables.map(t => `
                                     <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100">
                                         <div class="font-bold text-xs text-slate-800 font-mono mb-1"><i class="fa-solid fa-table text-blue-500 mr-1"></i> ${escapeHtml(t.tableName)}</div>
-                                        <div class="text-[11px] text-slate-500">${t.columns ? t.columns.length : 0} Kolom didefinisikan</div>
+                                        <div class="text-[11px] text-slate-500">${t.columns ? t.columns.length : 0} Kolom & Hirarki 5 Tingkat</div>
                                     </div>
                                 `).join('')}
                             </div>
@@ -777,18 +827,19 @@
             renderProgramsList(filtered);
         }
 
+        // --- DYNAMIC FORM BUILDER UP TO 5 LEVELS ---
         function addTableBlock(tableData = null) {
             const container = document.getElementById('tables-container');
             const blockId = 'table_block_' + Date.now() + '_' + Math.random().toString(36).substring(2,7);
             
             const tableName = tableData ? tableData.tableName : '';
-            const columns = tableData ? tableData.columns : [{ columnName: '', dataType: '', description: '' }];
+            const columns = tableData ? tableData.columns : [{ columnName: '', dataType: '', description: '', subTables: [] }];
 
             const blockHTML = `
                 <div id="${blockId}" class="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-3 table-block-item">
                     <div class="flex items-center justify-between">
                         <div class="flex-1 mr-3">
-                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Nama Tabel</label>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Nama Tabel Utama</label>
                             <input type="text" class="table-name-input w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Contoh: ZT_SALES_HDR" value="${escapeHtml(tableName)}">
                         </div>
                         <button type="button" onclick="document.getElementById('${blockId}').remove()" class="mt-5 w-8 h-8 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center text-xs transition-all" title="Hapus Tabel">
@@ -798,18 +849,11 @@
 
                     <div>
                         <div class="flex items-center justify-between mb-2">
-                            <span class="text-[10px] font-bold uppercase text-slate-400">Kolom Tabel</span>
+                            <span class="text-[10px] font-bold uppercase text-slate-400">Kolom & Sub-Tabel (Hingga 5 Tingkat)</span>
                             <button type="button" onclick="addColumnRow('${blockId}')" class="text-[11px] font-bold text-blue-600 hover:text-blue-700">+ Tambah Kolom</button>
                         </div>
-                        <div class="columns-container space-y-2">
-                            ${columns.map(c => `
-                                <div class="flex items-center space-x-2 column-row">
-                                    <input type="text" class="col-name w-1/3 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono" placeholder="Nama Kolom" value="${escapeHtml(c.columnName || '')}">
-                                    <input type="text" class="col-type w-1/3 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono" placeholder="Tipe Data (C, INT, DATE)" value="${escapeHtml(c.dataType || '')}">
-                                    <input type="text" class="col-desc w-1/3 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs" placeholder="Keterangan" value="${escapeHtml(c.description || '')}">
-                                    <button type="button" onclick="this.parentElement.remove()" class="w-8 h-8 text-slate-400 hover:text-rose-600 flex items-center justify-center"><i class="fa-solid fa-xmark text-xs"></i></button>
-                                </div>
-                            `).join('')}
+                        <div class="columns-container space-y-3">
+                            ${columns.map(c => renderColumnRowHTML(c, 1)).join('')}
                         </div>
                     </div>
                 </div>
@@ -817,18 +861,108 @@
             container.insertAdjacentHTML('beforeend', blockHTML);
         }
 
+        function renderColumnRowHTML(c = {}, level = 1) {
+            const colId = 'col_' + Math.random().toString(36).substring(2,7);
+            const subTables = c.subTables || [];
+
+            return `
+                <div id="${colId}" class="column-row p-3 bg-white rounded-xl border border-slate-200 space-y-2">
+                    <div class="flex items-center space-x-2">
+                        <input type="text" class="col-name w-1/3 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono" placeholder="Nama Kolom" value="${escapeHtml(c.columnName || '')}">
+                        <input type="text" class="col-type w-1/3 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono" placeholder="Tipe Data" value="${escapeHtml(c.dataType || '')}">
+                        <input type="text" class="col-desc w-1/3 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs" placeholder="Keterangan" value="${escapeHtml(c.description || '')}">
+                        <button type="button" onclick="this.closest('.column-row').remove()" class="w-8 h-8 text-slate-400 hover:text-rose-600 flex items-center justify-center"><i class="fa-solid fa-xmark text-xs"></i></button>
+                    </div>
+                    
+                    <div class="pl-4 border-l-2 border-blue-200 space-y-2 mt-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-bold text-blue-600 uppercase"><i class="fa-solid fa-table-cells mr-1"></i> Sub-Tabel Tingkat ${level} (${subTables.length})</span>
+                            ${level < 4 ? `<button type="button" onclick="addSubTableToColumn('${colId}', ${level + 1})" class="text-[10px] font-bold text-indigo-600 hover:text-indigo-800">+ Tambah Sub-Tabel Tingkat ${level + 1}</button>` : ''}
+                        </div>
+                        <div class="subtables-container space-y-2">
+                            ${subTables.map(st => renderSubTableHTML(st, level + 1)).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         function addColumnRow(blockId) {
             const block = document.getElementById(blockId);
             const colContainer = block.querySelector('.columns-container');
-            const rowHTML = `
-                <div class="flex items-center space-x-2 column-row">
-                    <input type="text" class="col-name w-1/3 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono" placeholder="Nama Kolom">
-                    <input type="text" class="col-type w-1/3 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono" placeholder="Tipe Data (C, INT, DATE)">
-                    <input type="text" class="col-desc w-1/3 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs" placeholder="Keterangan">
-                    <button type="button" onclick="this.parentElement.remove()" class="w-8 h-8 text-slate-400 hover:text-rose-600 flex items-center justify-center"><i class="fa-solid fa-xmark text-xs"></i></button>
+            colContainer.insertAdjacentHTML('beforeend', renderColumnRowHTML({}, 1));
+        }
+
+        function renderSubTableHTML(st = {}, level = 2) {
+            const subId = 'sub_' + Math.random().toString(36).substring(2,7);
+            const subCols = st.subColumns || [];
+            const nestedSubTables = st.subTables || [];
+
+            return `
+                <div id="${subId}" class="subtable-item p-2.5 bg-slate-50 rounded-lg border border-slate-200 space-y-2" data-level="${level}">
+                    <div class="flex items-center space-x-2">
+                        <input type="text" class="sub-table-name w-3/4 px-2.5 py-1.5 bg-white border border-slate-200 rounded-md text-xs font-mono font-bold text-slate-700" placeholder="Nama Sub-Tabel (Tingkat ${level})" value="${escapeHtml(st.subTableName || '')}">
+                        <button type="button" onclick="this.closest('.subtable-item').remove()" class="w-7 h-7 text-rose-500 hover:bg-rose-50 rounded-md flex items-center justify-center text-xs"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                    <div class="space-y-1.5 pl-2 border-l border-slate-300">
+                        <div class="flex justify-between items-center text-[10px] font-bold text-slate-500 uppercase">
+                            <span>Kolom Sub-Tabel (Tingkat ${level})</span>
+                            <button type="button" onclick="addSubColumnRow('${subId}')" class="text-blue-600 hover:underline">+ Kolom</button>
+                        </div>
+                        <div class="sub-cols-container space-y-1">
+                            ${subCols.map(sc => `
+                                <div class="flex items-center space-x-1.5 sub-col-row">
+                                    <input type="text" class="sc-name w-1/3 px-2 py-1 bg-white border border-slate-200 rounded text-[11px] font-mono" placeholder="Nama Kolom" value="${escapeHtml(sc.subColName || '')}">
+                                    <input type="text" class="sc-type w-1/3 px-2 py-1 bg-white border border-slate-200 rounded text-[11px] font-mono" placeholder="Tipe" value="${escapeHtml(sc.subDataType || '')}">
+                                    <input type="text" class="sc-desc w-1/3 px-2 py-1 bg-white border border-slate-200 rounded text-[11px]" placeholder="Ket" value="${escapeHtml(sc.subDesc || '')}">
+                                    <button type="button" onclick="this.parentElement.remove()" class="w-6 h-6 text-slate-400 hover:text-rose-600"><i class="fa-solid fa-xmark text-xs"></i></button>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        ${level < 4 ? `
+                            <div class="pt-2 border-t border-slate-200 mt-2">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-[9px] font-bold text-indigo-600 uppercase">Sub-Tabel Tingkat ${level + 1}</span>
+                                    <button type="button" onclick="addNestedSubTable('${subId}', ${level + 1})" class="text-[9px] font-bold text-indigo-700 hover:underline">+ Sub-Tabel Lanjutan</button>
+                                </div>
+                                <div class="nested-subtables-container space-y-2">
+                                    ${nestedSubTables.map(nst => renderSubTableHTML(nst, level + 1)).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
                 </div>
             `;
-            colContainer.insertAdjacentHTML('beforeend', rowHTML);
+        }
+
+        function addSubTableToColumn(colId, level) {
+            const colRow = document.getElementById(colId);
+            const subContainer = colRow.querySelector('.subtables-container');
+            subContainer.insertAdjacentHTML('beforeend', renderSubTableHTML({}, level));
+        }
+
+        function addNestedSubTable(subId, level) {
+            const subItem = document.getElementById(subId);
+            let nestedContainer = subItem.querySelector('.nested-subtables-container');
+            if (!nestedContainer) {
+                subItem.insertAdjacentHTML('beforeend', `<div class="nested-subtables-container space-y-2 mt-2"></div>`);
+                nestedContainer = subItem.querySelector('.nested-subtables-container');
+            }
+            nestedContainer.insertAdjacentHTML('beforeend', renderSubTableHTML({}, level));
+        }
+
+        function addSubColumnRow(subId) {
+            const subItem = document.getElementById(subId);
+            const subColContainer = subItem.querySelector('.sub-cols-container');
+            subColContainer.insertAdjacentHTML('beforeend', `
+                <div class="flex items-center space-x-1.5 sub-col-row">
+                    <input type="text" class="sc-name w-1/3 px-2 py-1 bg-white border border-slate-200 rounded text-[11px] font-mono" placeholder="Nama Kolom">
+                    <input type="text" class="sc-type w-1/3 px-2 py-1 bg-white border border-slate-200 rounded text-[11px] font-mono" placeholder="Tipe">
+                    <input type="text" class="sc-desc w-1/3 px-2 py-1 bg-white border border-slate-200 rounded text-[11px]" placeholder="Ket">
+                    <button type="button" onclick="this.parentElement.remove()" class="w-6 h-6 text-slate-400 hover:text-rose-600"><i class="fa-solid fa-xmark text-xs"></i></button>
+                </div>
+            `);
         }
 
         function openProgramModal(mode, id = null) {
@@ -846,7 +980,7 @@
                 document.getElementById('modal-title').textContent = 'Tambah Dokumen Program';
                 addTableBlock();
             } else if (mode === 'edit' && id) {
-                document.getElementById('modal-title').textContent = 'Edit Dokumen Program';
+                document.getElementById('modal-title').textContent = 'Edit Dokumen Program (5 Tingkat)';
                 const item = programsData.find(p => p.id === id);
                 if (item) {
                     document.getElementById('prog-id').value = item.id;
@@ -869,9 +1003,31 @@
 
         function closeProgramModal() { document.getElementById('program-modal').classList.add('hidden'); }
 
+        // --- RECURSIVE COLLECTOR FOR FORM SUBMISSION ---
+        function collectSubTablesRecursive(parentEl) {
+            const subItems = parentEl.querySelectorAll(':scope > .subtables-container > .subtable-item, :scope > .nested-subtables-container > .subtable-item');
+            const subTables = [];
+            subItems.forEach(si => {
+                const subTableName = si.querySelector('.sub-table-name').value.trim();
+                if (subTableName) {
+                    const subColumns = [];
+                    si.querySelectorAll(':scope > .space-y-1.5 > .sub-cols-container > .sub-col-row').forEach(scRow => {
+                        subColumns.push({
+                            subColName: scRow.querySelector('.sc-name').value.trim(),
+                            subDataType: scRow.querySelector('.sc-type').value.trim(),
+                            subDesc: scRow.querySelector('.sc-desc').value.trim()
+                        });
+                    });
+                    const nestedSubTables = collectSubTablesRecursive(si);
+                    subTables.push({ subTableName, subColumns, subTables });
+                }
+            });
+            return subTables;
+        }
+
         async function handleProgramSubmit(e) {
             e.preventDefault();
-            showLoader("Menyimpan Dokumen Program...");
+            showLoader("Menyimpan Dokumen Program (5 Tingkat)...");
 
             const fm = window.firebaseModules;
             const id = document.getElementById('prog-id').value;
@@ -885,11 +1041,12 @@
                 const colRows = block.querySelectorAll('.column-row');
                 const columns = [];
                 colRows.forEach(row => {
-                    columns.push({
-                        columnName: row.querySelector('.col-name').value.trim(),
-                        dataType: row.querySelector('.col-type').value.trim(),
-                        description: row.querySelector('.col-desc').value.trim()
-                    });
+                    const columnName = row.querySelector('.col-name').value.trim();
+                    const dataType = row.querySelector('.col-type').value.trim();
+                    const description = row.querySelector('.col-desc').value.trim();
+                    const subTables = collectSubTablesRecursive(row);
+
+                    columns.push({ columnName, dataType, description, subTables });
                 });
 
                 tables.push({ tableName, columns });
@@ -934,6 +1091,39 @@
             }
         }
 
+        // --- RECURSIVE RENDERER FOR DETAIL VIEW (5 TINGKAT) ---
+        function renderSubTablesDetailHTML(subTables) {
+            if (!subTables || subTables.length === 0) return '';
+            return subTables.map(st => `
+                <div class="bg-white p-2.5 rounded-xl border border-indigo-100 shadow-sm space-y-1.5 mt-2">
+                    <div class="font-bold text-[11px] text-indigo-900 font-mono"><i class="fa-solid fa-table text-indigo-500 mr-1"></i>${escapeHtml(st.subTableName)}</div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left bg-slate-50/50 rounded-lg text-[11px] font-mono">
+                            <thead>
+                                <tr class="text-[9px] text-slate-400 uppercase border-b border-slate-200">
+                                    <th class="p-1.5">Kolom</th><th class="p-1.5">Tipe</th><th class="p-1.5">Ket</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${(st.subColumns || []).map(sc => `
+                                    <tr class="border-b border-slate-100">
+                                        <td class="p-1.5 font-bold text-slate-700">${escapeHtml(sc.subColName)}</td>
+                                        <td class="p-1.5 text-blue-600">${escapeHtml(sc.subDataType)}</td>
+                                        <td class="p-1.5 text-slate-500 font-sans">${escapeHtml(sc.subDesc || '-')}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    ${st.subTables && st.subTables.length > 0 ? `
+                        <div class="pl-3 border-l-2 border-purple-200 space-y-2 mt-2">
+                            ${renderSubTablesDetailHTML(st.subTables)}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
         function viewProgramDetail(id) {
             const item = programsData.find(p => p.id === id);
             if (!item) return;
@@ -950,10 +1140,7 @@
 
             document.getElementById('detail-prog-name').textContent = item.programName;
             document.getElementById('detail-module-badge').textContent = item.moduleName;
-            
-            // TAMPILAN CREATE DATE DI HEADER MODAL DETAIL (VIEW TABLE / DETAIL TABLE)
             document.getElementById('detail-create-date').innerHTML = `<i class="fa-solid fa-calendar-days mr-1"></i> ${escapeHtml(item.createDate || 'N/A')}`;
-            
             document.getElementById('detail-description').textContent = item.description || 'Tidak ada deskripsi.';
             document.getElementById('detail-flow').textContent = item.flow || 'Tidak ada dokumentasi flow.';
             document.getElementById('detail-logic').textContent = item.logic || 'Tidak ada dokumentasi logika bisnis.';
@@ -978,17 +1165,25 @@
                             <table class="w-full text-left border-collapse">
                                 <thead>
                                     <tr class="border-b border-slate-200 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-white/50">
-                                        <th class="py-2.5 px-4">Nama Kolom</th>
+                                        <th class="py-2.5 px-4">Nama Kolom Utama</th>
                                         <th class="py-2.5 px-4">Tipe Data</th>
-                                        <th class="py-2.5 px-4">Keterangan</th>
+                                        <th class="py-2.5 px-4">Keterangan / Sub-Tabel (5 Tingkat)</th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-slate-100 text-xs font-mono">
+                                <tbody class="divide-y divide-slate-100 text-xs">
                                     ${(t.columns || []).map(c => `
-                                        <tr class="hover:bg-white/80">
-                                            <td class="py-2.5 px-4 font-bold text-slate-800">${escapeHtml(c.columnName)}</td>
-                                            <td class="py-2.5 px-4 text-blue-600 font-semibold">${escapeHtml(c.dataType)}</td>
-                                            <td class="py-2.5 px-4 text-slate-600 font-sans">${escapeHtml(c.description || '-')}</td>
+                                        <tr class="hover:bg-white/80 align-top">
+                                            <td class="py-3 px-4 font-bold text-slate-800 font-mono">${escapeHtml(c.columnName)}</td>
+                                            <td class="py-3 px-4 text-blue-600 font-semibold font-mono">${escapeHtml(c.dataType)}</td>
+                                            <td class="py-3 px-4 text-slate-600 space-y-2">
+                                                <div>${escapeHtml(c.description || '-')}</div>
+                                                ${c.subTables && c.subTables.length > 0 ? `
+                                                    <div class="pl-3 border-l-2 border-indigo-200 space-y-2 mt-2">
+                                                        <span class="text-[10px] font-bold uppercase text-indigo-600 block"><i class="fa-solid fa-table-cells mr-1"></i> Sub-Tabel Hirarki:</span>
+                                                        ${renderSubTablesDetailHTML(c.subTables)}
+                                                    </div>
+                                                ` : ''}
+                                            </td>
                                         </tr>
                                     `).join('')}
                                 </tbody>
