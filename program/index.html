@@ -202,7 +202,7 @@
 
     <!-- Footer -->
     <footer class="py-4 text-center text-xs text-slate-400 border-t border-slate-100 bg-white mt-auto mb-16 md:mb-0">
-        <p>&copy; 2026 LogKerja &bull; Copyright <span class="font-bold text-slate-600">@Mochamad Fuad Asyhary</span>[cite: 5]</p>
+        <p>&copy; 2026 LogKerja &bull; Copyright <span class="font-bold text-slate-600">@Mochamad Fuad Asyhary</span></p>
     </footer>
 
     <!-- Mobile Bottom Nav -->    
@@ -623,8 +623,8 @@
                     });
                 }
 
-                const subTables = parseSubTablesRecursive(nestedSubRaw);
-                subTables.push({ subTableName, subColumns, subTables });
+                const parsedNested = parseSubTablesRecursive(nestedSubRaw);
+                subTables.push({ subTableName, subColumns, subTables: parsedNested });
             });
             return subTables;
         }
@@ -877,7 +877,7 @@
                     <div class="pl-4 border-l-2 border-blue-200 space-y-2 mt-2">
                         <div class="flex items-center justify-between">
                             <span class="text-[10px] font-bold text-blue-600 uppercase"><i class="fa-solid fa-table-cells mr-1"></i> Sub-Tabel Tingkat ${level} (${subTables.length})</span>
-                            ${level < 4 ? `<button type="button" onclick="addSubTableToColumn('${colId}', ${level + 1})" class="text-[10px] font-bold text-indigo-600 hover:text-indigo-800">+ Tambah Sub-Tabel Tingkat ${level + 1}</button>` : ''}
+                            ${level < 5 ? `<button type="button" onclick="addSubTableToColumn('${colId}', ${level + 1})" class="text-[10px] font-bold text-indigo-600 hover:text-indigo-800">+ Tambah Sub-Tabel Tingkat ${level + 1}</button>` : ''}
                         </div>
                         <div class="subtables-container space-y-2">
                             ${subTables.map(st => renderSubTableHTML(st, level + 1)).join('')}
@@ -899,38 +899,36 @@
             const nestedSubTables = st.subTables || [];
 
             return `
-                <div id="${subId}" class="subtable-item p-2.5 bg-slate-50 rounded-lg border border-slate-200 space-y-2" data-level="${level}">
+                <div id="${subId}" class="subtable-item p-3 bg-white rounded-xl border border-slate-200 shadow-sm space-y-2" data-level="${level}">
                     <div class="flex items-center space-x-2">
-                        <input type="text" class="sub-table-name w-3/4 px-2.5 py-1.5 bg-white border border-slate-200 rounded-md text-xs font-mono font-bold text-slate-700" placeholder="Nama Sub-Tabel (Tingkat ${level})" value="${escapeHtml(st.subTableName || '')}">
-                        <button type="button" onclick="this.closest('.subtable-item').remove()" class="w-7 h-7 text-rose-500 hover:bg-rose-50 rounded-md flex items-center justify-center text-xs"><i class="fa-solid fa-trash"></i></button>
+                        <input type="text" class="sub-table-name w-3/4 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono font-bold text-slate-700" placeholder="Nama Sub-Tabel (Tingkat ${level})" value="${escapeHtml(st.subTableName || '')}">
+                        <button type="button" onclick="this.closest('.subtable-item').remove()" class="w-8 h-8 text-rose-500 hover:bg-rose-50 rounded-lg flex items-center justify-center text-xs"><i class="fa-solid fa-trash"></i></button>
                     </div>
-                    <div class="space-y-1.5 pl-2 border-l border-slate-300">
+                    <div class="space-y-2 pl-3 border-l-2 border-indigo-200">
                         <div class="flex justify-between items-center text-[10px] font-bold text-slate-500 uppercase">
-                            <span>Kolom Sub-Tabel (Tingkat ${level})</span>
+                            <span>Kolom Sub-Tabel (Lvl ${level})</span>
                             <button type="button" onclick="addSubColumnRow('${subId}')" class="text-blue-600 hover:underline">+ Kolom</button>
                         </div>
-                        <div class="sub-cols-container space-y-1">
+                        <div class="sub-cols-container space-y-1.5">
                             ${subCols.map(sc => `
                                 <div class="flex items-center space-x-1.5 sub-col-row">
-                                    <input type="text" class="sc-name w-1/3 px-2 py-1 bg-white border border-slate-200 rounded text-[11px] font-mono" placeholder="Nama Kolom" value="${escapeHtml(sc.subColName || '')}">
-                                    <input type="text" class="sc-type w-1/3 px-2 py-1 bg-white border border-slate-200 rounded text-[11px] font-mono" placeholder="Tipe" value="${escapeHtml(sc.subDataType || '')}">
-                                    <input type="text" class="sc-desc w-1/3 px-2 py-1 bg-white border border-slate-200 rounded text-[11px]" placeholder="Ket" value="${escapeHtml(sc.subDesc || '')}">
+                                    <input type="text" class="sc-name w-1/3 px-2 py-1 bg-slate-50 border border-slate-200 rounded text-[11px] font-mono" placeholder="Nama Kolom" value="${escapeHtml(sc.subColName || '')}">
+                                    <input type="text" class="sc-type w-1/3 px-2 py-1 bg-slate-50 border border-slate-200 rounded text-[11px] font-mono" placeholder="Tipe" value="${escapeHtml(sc.subDataType || '')}">
+                                    <input type="text" class="sc-desc w-1/3 px-2 py-1 bg-slate-50 border border-slate-200 rounded text-[11px]" placeholder="Ket" value="${escapeHtml(sc.subDesc || '')}">
                                     <button type="button" onclick="this.parentElement.remove()" class="w-6 h-6 text-slate-400 hover:text-rose-600"><i class="fa-solid fa-xmark text-xs"></i></button>
                                 </div>
                             `).join('')}
                         </div>
 
-                        ${level < 4 ? `
-                            <div class="pt-2 border-t border-slate-200 mt-2">
-                                <div class="flex items-center justify-between mb-1">
-                                    <span class="text-[9px] font-bold text-indigo-600 uppercase">Sub-Tabel Tingkat ${level + 1}</span>
-                                    <button type="button" onclick="addNestedSubTable('${subId}', ${level + 1})" class="text-[9px] font-bold text-indigo-700 hover:underline">+ Sub-Tabel Lanjutan</button>
-                                </div>
-                                <div class="nested-subtables-container space-y-2">
-                                    ${nestedSubTables.map(nst => renderSubTableHTML(nst, level + 1)).join('')}
-                                </div>
+                        <div class="pt-2 border-t border-slate-100 mt-2">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-[9px] font-bold text-purple-600 uppercase">Sub-Tabel Tingkat ${level + 1}</span>
+                                ${level < 5 ? `<button type="button" onclick="addNestedSubTable('${subId}', ${level + 1})" class="text-[9px] font-bold text-purple-700 hover:underline">+ Sub-Tabel Lanjutan</button>` : ''}
                             </div>
-                        ` : ''}
+                            <div class="nested-subtables-container space-y-2">
+                                ${nestedSubTables.map(nst => renderSubTableHTML(nst, level + 1)).join('')}
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
@@ -1003,23 +1001,27 @@
 
         function closeProgramModal() { document.getElementById('program-modal').classList.add('hidden'); }
 
-        // --- RECURSIVE COLLECTOR FOR FORM SUBMISSION ---
-        function collectSubTablesRecursive(parentEl) {
-            const subItems = parentEl.querySelectorAll(':scope > .subtables-container > .subtable-item, :scope > .nested-subtables-container > .subtable-item');
+        // --- RECURSIVE COLLECTOR FOR FORM SUBMISSION (FIXED) ---
+        function collectSubTablesRecursive(containerEl) {
+            const subItems = containerEl.querySelectorAll(':scope > .subtable-item');
             const subTables = [];
             subItems.forEach(si => {
-                const subTableName = si.querySelector('.sub-table-name').value.trim();
+                const subTableNameInput = si.querySelector('.sub-table-name');
+                const subTableName = subTableNameInput ? subTableNameInput.value.trim() : '';
                 if (subTableName) {
                     const subColumns = [];
-                    si.querySelectorAll(':scope > .space-y-1.5 > .sub-cols-container > .sub-col-row').forEach(scRow => {
+                    si.querySelectorAll(':scope > .space-y-2 > .sub-cols-container > .sub-col-row').forEach(scRow => {
                         subColumns.push({
                             subColName: scRow.querySelector('.sc-name').value.trim(),
                             subDataType: scRow.querySelector('.sc-type').value.trim(),
                             subDesc: scRow.querySelector('.sc-desc').value.trim()
                         });
                     });
-                    const nestedSubTables = collectSubTablesRecursive(si);
-                    subTables.push({ subTableName, subColumns, subTables });
+                    
+                    const nestedContainer = si.querySelector(':scope > .space-y-2 > .pt-2 > .nested-subtables-container');
+                    const nestedSubTables = nestedContainer ? collectSubTablesRecursive(nestedContainer) : [];
+                    
+                    subTables.push({ subTableName, subColumns, subTables: nestedSubTables });
                 }
             });
             return subTables;
@@ -1044,7 +1046,9 @@
                     const columnName = row.querySelector('.col-name').value.trim();
                     const dataType = row.querySelector('.col-type').value.trim();
                     const description = row.querySelector('.col-desc').value.trim();
-                    const subTables = collectSubTablesRecursive(row);
+                    
+                    const subContainer = row.querySelector(':scope > .pl-4 > .subtables-container');
+                    const subTables = subContainer ? collectSubTablesRecursive(subContainer) : [];
 
                     columns.push({ columnName, dataType, description, subTables });
                 });
@@ -1091,32 +1095,37 @@
             }
         }
 
-        // --- RECURSIVE RENDERER FOR DETAIL VIEW (5 TINGKAT) ---
+        // --- RECURSIVE RENDERER FOR DETAIL VIEW (FIXED) ---
         function renderSubTablesDetailHTML(subTables) {
             if (!subTables || subTables.length === 0) return '';
             return subTables.map(st => `
-                <div class="bg-white p-2.5 rounded-xl border border-indigo-100 shadow-sm space-y-1.5 mt-2">
-                    <div class="font-bold text-[11px] text-indigo-900 font-mono"><i class="fa-solid fa-table text-indigo-500 mr-1"></i>${escapeHtml(st.subTableName)}</div>
+                <div class="bg-white p-3 rounded-xl border border-indigo-200 shadow-sm space-y-2 mt-2">
+                    <div class="font-bold text-xs text-indigo-900 font-mono flex items-center justify-between">
+                        <span><i class="fa-solid fa-table-cells text-indigo-600 mr-1.5"></i>${escapeHtml(st.subTableName)}</span>
+                        <span class="text-[9px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded">Sub-Tabel Hirarki</span>
+                    </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left bg-slate-50/50 rounded-lg text-[11px] font-mono">
+                        <table class="w-full text-left bg-slate-50/80 rounded-lg text-xs font-mono border border-slate-100">
                             <thead>
-                                <tr class="text-[9px] text-slate-400 uppercase border-b border-slate-200">
-                                    <th class="p-1.5">Kolom</th><th class="p-1.5">Tipe</th><th class="p-1.5">Ket</th>
+                                <tr class="text-[10px] text-slate-400 uppercase border-b border-slate-200 bg-slate-100/50">
+                                    <th class="p-2">Nama Kolom Sub</th>
+                                    <th class="p-2">Tipe Data</th>
+                                    <th class="p-2">Keterangan</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 ${(st.subColumns || []).map(sc => `
-                                    <tr class="border-b border-slate-100">
-                                        <td class="p-1.5 font-bold text-slate-700">${escapeHtml(sc.subColName)}</td>
-                                        <td class="p-1.5 text-blue-600">${escapeHtml(sc.subDataType)}</td>
-                                        <td class="p-1.5 text-slate-500 font-sans">${escapeHtml(sc.subDesc || '-')}</td>
+                                    <tr class="border-b border-slate-100 hover:bg-white">
+                                        <td class="p-2 font-bold text-slate-700">${escapeHtml(sc.subColName)}</td>
+                                        <td class="p-2 text-blue-600">${escapeHtml(sc.subDataType)}</td>
+                                        <td class="p-2 text-slate-500 font-sans">${escapeHtml(sc.subDesc || '-')}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
                         </table>
                     </div>
                     ${st.subTables && st.subTables.length > 0 ? `
-                        <div class="pl-3 border-l-2 border-purple-200 space-y-2 mt-2">
+                        <div class="pl-4 border-l-2 border-purple-300 space-y-2 mt-2">
                             ${renderSubTablesDetailHTML(st.subTables)}
                         </div>
                     ` : ''}
@@ -1152,8 +1161,8 @@
                 tablesContainer.innerHTML = `<p class="text-xs text-slate-400 italic">Tidak ada tabel yang didefinisikan.</p>`;
             } else {
                 tablesContainer.innerHTML = tables.map(t => `
-                    <div class="bg-slate-50 rounded-2xl border border-slate-200/80 overflow-hidden">
-                        <div class="p-3.5 bg-blue-50/50 border-b border-slate-200/60 font-bold text-xs text-slate-900 font-mono flex items-center justify-between">
+                    <div class="bg-slate-50 rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm">
+                        <div class="p-3.5 bg-blue-50/60 border-b border-slate-200/60 font-bold text-xs text-slate-900 font-mono flex items-center justify-between">
                             <div class="flex items-center">
                                 <i class="fa-solid fa-table text-blue-600 mr-2"></i> ${escapeHtml(t.tableName)}
                             </div>
@@ -1167,19 +1176,19 @@
                                     <tr class="border-b border-slate-200 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-white/50">
                                         <th class="py-2.5 px-4">Nama Kolom Utama</th>
                                         <th class="py-2.5 px-4">Tipe Data</th>
-                                        <th class="py-2.5 px-4">Keterangan / Sub-Tabel (5 Tingkat)</th>
+                                        <th class="py-2.5 px-4">Keterangan / Sub-Tabel Hirarki (Lvl 2 - 5)</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100 text-xs">
                                     ${(t.columns || []).map(c => `
-                                        <tr class="hover:bg-white/80 align-top">
+                                        <tr class="hover:bg-white/85 align-top">
                                             <td class="py-3 px-4 font-bold text-slate-800 font-mono">${escapeHtml(c.columnName)}</td>
                                             <td class="py-3 px-4 text-blue-600 font-semibold font-mono">${escapeHtml(c.dataType)}</td>
                                             <td class="py-3 px-4 text-slate-600 space-y-2">
                                                 <div>${escapeHtml(c.description || '-')}</div>
                                                 ${c.subTables && c.subTables.length > 0 ? `
-                                                    <div class="pl-3 border-l-2 border-indigo-200 space-y-2 mt-2">
-                                                        <span class="text-[10px] font-bold uppercase text-indigo-600 block"><i class="fa-solid fa-table-cells mr-1"></i> Sub-Tabel Hirarki:</span>
+                                                    <div class="pl-3 border-l-2 border-indigo-300 space-y-2 mt-2 bg-indigo-50/30 p-2.5 rounded-xl">
+                                                        <span class="text-[10px] font-bold uppercase text-indigo-700 block"><i class="fa-solid fa-sitemap mr-1"></i> Struktur Sub-Tabel Turunan:</span>
                                                         ${renderSubTablesDetailHTML(c.subTables)}
                                                     </div>
                                                 ` : ''}
