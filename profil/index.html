@@ -8,6 +8,17 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Menghilangkan badge Powered by (Netlify/Vercel/dll) secara otomatis khusus pada tampilan mobile */
+        @media (max-width: 768px) {
+            #netlify-badge, iframe[src*="netlify"], div[style*="z-index: 99999"], a[href*="netlify.com/ljiv"] {
+                display: none !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+                pointer-events: none !important;
+            }
+        }
+    </style>
 </head>
 <body class="bg-[#f8fafc] text-slate-800 font-sans antialiased min-h-screen flex flex-col pb-20 md:pb-0">
 
@@ -91,8 +102,10 @@
                         <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 block mb-1"><i class="fa-solid fa-id-badge mr-1"></i> User ID / UID Akun</span>
                         <code id="display-user-uid" class="text-xs font-mono font-bold text-slate-700 bg-white px-2.5 py-1 rounded-lg border border-blue-200 inline-block">Memuat UID...</code>
                     </div>
-                    <button type="button" onclick="copyUserUid()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center space-x-1.5 self-start sm:self-center">
-                        <i class="fa-regular fa-copy"></i><span>Salin UID</span>
+                    <!-- Contoh Tombol dengan responsif Mobile: Teks tersembunyi di mobile, tampil ikon saja -->
+                    <button type="button" onclick="copyUserUid()" class="px-3 sm:px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center space-x-1.5 self-start sm:self-center" title="Salin UID">
+                        <i class="fa-regular fa-copy"></i>
+                        <span class="hidden sm:inline">Salin UID</span>
                     </button>
                 </div>
 

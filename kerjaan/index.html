@@ -10,8 +10,20 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Library SheetJS untuk membaca file Excel (.xlsx / .xls / .csv) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        /* Menyembunyikan badge Powered by (Netlify/Vercel/dll) secara otomatis khusus pada tampilan mobile */
+        @media (max-width: 768px) {
+            #netlify-badge, iframe[src*="netlify"], div[style*="z-index: 99999"], a[href*="netlify.com/ljiv"] {
+                display: none !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+                pointer-events: none !important;
+            }
+        }
+    </style>
 </head>
 <body class="bg-[#f8fafc] text-slate-800 font-sans antialiased min-h-screen flex flex-col pb-20 md:pb-0">
+    
     <!-- Global Loader -->
     <div id="global-loader" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex flex-col items-center justify-center hidden">
         <div class="bg-white p-6 rounded-3xl shadow-2xl flex flex-col items-center space-y-4 max-w-xs w-full mx-4 border border-slate-100 animate-pulse">
@@ -68,13 +80,13 @@
             </div>
 
             <div class="flex items-center space-x-3">
-                <!-- Tombol Inject Data Excel (Default hidden agar tidak kedip di mode tamu) -->
-                <button id="btn-inject-excel" onclick="openInjectModal()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-emerald-200 flex items-center space-x-2 hidden">
-                    <i class="fa-solid fa-file-excel text-xs"></i><span>Inject Data Excel</span>
+                <!-- Tombol Inject Data Excel: Ikon selalu tampil, teks tersembunyi di mobile (sm:inline) -->
+                <button id="btn-inject-excel" onclick="openInjectModal()" class="px-3 sm:px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-emerald-200 flex items-center space-x-2 hidden" title="Inject Data Excel">
+                    <i class="fa-solid fa-file-excel text-xs"></i><span class="hidden sm:inline">Inject Data Excel</span>
                 </button>
-                <!-- Tombol Tambah Kerjaan (Default hidden agar tidak kedip di mode tamu) -->
-                <button id="btn-add-log" onclick="openLogModal()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-200 flex items-center space-x-2 hidden">
-                    <i class="fa-solid fa-plus text-xs"></i><span>Tambah Kerjaan</span>
+                <!-- Tombol Tambah Kerjaan: Ikon selalu tampil, teks tersembunyi di mobile (sm:inline) -->
+                <button id="btn-add-log" onclick="openLogModal()" class="px-3 sm:px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-200 flex items-center space-x-2 hidden" title="Tambah Kerjaan">
+                    <i class="fa-solid fa-plus text-xs"></i><span class="hidden sm:inline">Tambah Kerjaan</span>
                 </button>
                 <button onclick="handleLogout()" class="w-9 h-9 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-600 rounded-xl flex items-center justify-center text-xs transition-all" title="Keluar">
                     <i class="fa-solid fa-right-from-bracket"></i>
@@ -174,7 +186,7 @@
 
     <!-- Footer -->
     <footer class="py-4 text-center text-xs text-slate-400 border-t border-slate-100 bg-white mt-auto mb-16 md:mb-0">
-        <p>&copy; 2026 LogKerja &bull; Copyright <span class="font-bold text-slate-600">@Mochamad Fuad Asyhary</span>[cite: 5]</p>
+        <p>&copy; 2026 LogKerja &bull; Copyright <span class="font-bold text-slate-600">@Mochamad Fuad Asyhary</span></p>
     </footer>
 
     <!-- Mobile Bottom Nav -->
@@ -477,10 +489,8 @@
 
             const guestUid = localStorage.getItem('guest_target_uid');
             if (guestUid) {
-                // Mode Tamu: Tombol tetap tersembunyi tanpa kedip karena sudah di-set hidden di HTML
                 setupRealtimeListeners(guestUid);
             } else {
-                // User Login Biasa: Tampilkan kembali tombol aksi
                 document.getElementById('btn-add-log')?.classList.remove('hidden');
                 document.getElementById('btn-inject-excel')?.classList.remove('hidden');
 
@@ -904,7 +914,7 @@
 
         function exportToExcel() {
             let html = `<table border="1"><tr><th>Judul</th><th>Program</th><th>Modul</th><th>Status</th></tr>` +
-                logsData.map(i => `<tr><td>${i.title}</td><td>${i.programName}</td><td>${i.moduleName}</td><td>${i.status}</td></tr>`).join('') + `</table>`;
+                logsData.log(i => `<tr><td>${i.title}</td><td>${i.programName}</td><td>${i.moduleName}</td><td>${i.status}</td></tr>`).join('') + `</table>`;
             const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);

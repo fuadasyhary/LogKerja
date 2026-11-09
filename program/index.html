@@ -10,6 +10,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Library SheetJS untuk membaca & mengekspor file Excel (.xlsx / .xls / .csv) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        /* Menyembunyikan badge Powered by (Netlify/Vercel/dll) secara otomatis khusus pada tampilan mobile */
+        @media (max-width: 768px) {
+            #netlify-badge, iframe[src*="netlify"], div[style*="z-index: 99999"], a[href*="netlify.com/ljiv"] {
+                display: none !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+                pointer-events: none !important;
+            }
+        }
+    </style>
 </head>
 <body class="bg-[#f8fafc] text-slate-800 font-sans antialiased min-h-screen flex flex-col pb-20 md:pb-0">
 
@@ -67,12 +78,16 @@
             </div>
 
             <div class="flex items-center space-x-3">
-                <button id="btn-inject-excel" onclick="openInjectModal()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center space-x-2 shadow-md shadow-emerald-200 transition-all hidden">
-                    <i class="fa-solid fa-file-excel text-xs"></i><span>Inject Data Excel</span>
+                <!-- Tombol Inject Excel (Mobile: Hanya Icon) -->
+                <button id="btn-inject-excel" onclick="openInjectModal()" class="px-3 sm:px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center space-x-2 shadow-md shadow-emerald-200 transition-all hidden" title="Inject Data Excel">
+                    <i class="fa-solid fa-file-excel text-xs"></i>
+                    <span class="hidden sm:inline">Inject Data Excel</span>
                 </button>
 
-                <button id="btn-add-program" onclick="openProgramModal('create')" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center space-x-2 shadow-md shadow-blue-200 transition-all hidden">
-                    <i class="fa-solid fa-plus text-xs"></i><span>Tambah Dokumen Program</span>
+                <!-- Tombol Tambah Program (Mobile: Hanya Icon) -->
+                <button id="btn-add-program" onclick="openProgramModal('create')" class="px-3 sm:px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center space-x-2 shadow-md shadow-blue-200 transition-all hidden" title="Tambah Dokumen Program">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    <span class="hidden sm:inline">Tambah Dokumen Program</span>
                 </button>
                 
                 <button onclick="handleLogout()" class="w-9 h-9 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-600 rounded-xl flex items-center justify-center text-xs transition-all" title="Keluar">
