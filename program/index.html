@@ -310,9 +310,14 @@
                             <h4 class="font-bold text-slate-900 text-xs uppercase">Struktur 5 Tingkat (Tabel & Sub-Tabel Bersarang)</h4>
                             <p class="text-[11px] text-slate-400">Tambahkan tabel utama, lalu sub-tabel tingkat 1, 2, 3, hingga 4.</p>
                         </div>
-                        <button type="button" onclick="addTableBlock()" class="px-3.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5">
-                            <i class="fa-solid fa-table text-[11px]"></i><span>+ Tambah Tabel Utama</span>
-                        </button>
+                        <div class="flex items-center space-x-2">
+                            <button type="button" onclick="openJsonModal()" class="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5">
+                                <i class="fa-solid fa-code text-[11px]"></i><span>Edit / Input JSON</span>
+                            </button>
+                            <button type="button" onclick="addTableBlock()" class="px-3.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5">
+                                <i class="fa-solid fa-table text-[11px]"></i><span>+ Tambah Tabel Utama</span>
+                            </button>
+                        </div>
                     </div>
 
                     <div id="tables-container" class="space-y-4"></div>
@@ -334,6 +339,43 @@
                     <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-2xl text-xs font-bold shadow-md shadow-blue-200">Simpan Dokumen</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal Editor JSON Struktur Tabel -->
+    <div id="json-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4 hidden overflow-y-auto">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden border border-slate-100 my-8">
+            <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-indigo-50 to-blue-50/30">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center shadow-md">
+                        <i class="fa-solid fa-code text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base text-slate-900">Format JSON Struktur Tabel (5 Tingkat)</h3>
+                        <p class="text-xs text-slate-500">Ubah atau salin struktur tabel dalam format JSON secara langsung.</p>
+                    </div>
+                </div>
+                <button onclick="closeJsonModal()" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-500 flex items-center justify-center shadow-sm"><i class="fa-solid fa-xmark text-xs"></i></button>
+            </div>
+            
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Struktur JSON Tabel & Kolom</label>
+                    <textarea id="json-input-textarea" rows="12" class="w-full px-4 py-3 bg-slate-900 text-emerald-400 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed font-mono" placeholder="Masukkan format JSON di sini..."></textarea>
+                </div>
+
+                <div class="bg-indigo-50 p-3.5 rounded-2xl border border-indigo-100 text-indigo-900 text-[11px] space-y-1">
+                    <p class="font-bold"><i class="fa-solid fa-circle-info mr-1"></i> Panduan Perubahan (Change):</p>
+                    <p>Format JSON akan otomatis menyinkronkan isian tabel visual saat tombol "Terapkan ke Form" diklik, atau Anda bisa langsung mengedit form visual dan melihat hasilnya di JSON.</p>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-end space-x-3">
+                    <button type="button" onclick="closeJsonModal()" class="px-5 py-3 bg-slate-100 text-slate-600 rounded-2xl text-xs font-bold">Batal</button>
+                    <button type="button" onclick="applyJsonToForm()" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-xs font-bold shadow-md shadow-indigo-200 transition-all flex items-center space-x-2">
+                        <i class="fa-solid fa-check text-xs"></i><span>Terapkan ke Form</span>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -963,6 +1005,58 @@
             `);
         }
 
+        // --- JSON EDITOR INTEGRATION (CHANGE & INPUT FORMAT) ---
+        function collectTablesFromForm() {
+            const tableBlocks = document.querySelectorAll('.table-block-item');
+            const tables = [];
+            tableBlocks.forEach(block => {
+                const tableName = block.querySelector('.table-name-input').value.trim();
+                if (!tableName) return;
+                
+                const colRows = block.querySelectorAll('.column-row');
+                const columns = [];
+                colRows.forEach(row => {
+                    const columnName = row.querySelector('.col-name').value.trim();
+                    const dataType = row.querySelector('.col-type').value.trim();
+                    const description = row.querySelector('.col-desc').value.trim();
+                    
+                    const subContainer = row.querySelector(':scope > .pl-4 > .subtables-container');
+                    const subTables = subContainer ? collectSubTablesRecursive(subContainer) : [];
+
+                    columns.push({ columnName, dataType, description, subTables });
+                });
+
+                tables.push({ tableName, columns });
+            });
+            return tables;
+        }
+
+        function openJsonModal() {
+            const tables = collectTablesFromForm();
+            document.getElementById('json-input-textarea').value = JSON.stringify(tables, null, 2);
+            document.getElementById('json-modal').classList.remove('hidden');
+        }
+
+        function closeJsonModal() {
+            document.getElementById('json-modal').classList.add('hidden');
+        }
+
+        function applyJsonToForm() {
+            try {
+                const jsonText = document.getElementById('json-input-textarea').value.trim();
+                const tables = JSON.parse(jsonText);
+                if (!Array.isArray(tables)) {
+                    throw new Error("Format JSON harus berupa array of tables [...]");
+                }
+
+                document.getElementById('tables-container').innerHTML = '';
+                tables.forEach(t => addTableBlock(t));
+                closeJsonModal();
+            } catch (err) {
+                alert('Format JSON tidak valid: ' + err.message);
+            }
+        }
+
         function openProgramModal(mode, id = null) {
             document.getElementById('prog-id').value = '';
             document.getElementById('prog-name').value = '';
@@ -1033,28 +1127,7 @@
 
             const fm = window.firebaseModules;
             const id = document.getElementById('prog-id').value;
-
-            const tableBlocks = document.querySelectorAll('.table-block-item');
-            const tables = [];
-            tableBlocks.forEach(block => {
-                const tableName = block.querySelector('.table-name-input').value.trim();
-                if (!tableName) return;
-                
-                const colRows = block.querySelectorAll('.column-row');
-                const columns = [];
-                colRows.forEach(row => {
-                    const columnName = row.querySelector('.col-name').value.trim();
-                    const dataType = row.querySelector('.col-type').value.trim();
-                    const description = row.querySelector('.col-desc').value.trim();
-                    
-                    const subContainer = row.querySelector(':scope > .pl-4 > .subtables-container');
-                    const subTables = subContainer ? collectSubTablesRecursive(subContainer) : [];
-
-                    columns.push({ columnName, dataType, description, subTables });
-                });
-
-                tables.push({ tableName, columns });
-            });
+            const tables = collectTablesFromForm();
 
             const payload = {
                 programName: document.getElementById('prog-name').value.trim(),
