@@ -9,14 +9,23 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Menghilangkan badge Powered by (Netlify/Vercel/dll) secara otomatis khusus pada tampilan mobile */
-        @media (max-width: 768px) {
-            #netlify-badge, iframe[src*="netlify"], div[style*="z-index: 99999"], a[href*="netlify.com/ljiv"] {
-                display: none !important;
-                visibility: hidden !important;
-                opacity: 0 !important;
-                pointer-events: none !important;
-            }
+        /* Sembunyikan badge Netlify secara total di semua ukuran layar */
+        #netlify-badge, 
+        iframe[src*="netlify"], 
+        div[style*="z-index: 99999"], 
+        a[href*="netlify.com"], 
+        a[href*="netlify.app"],
+        div:has(> a[href*="netlify"]),
+        iframe[id*="netlify"],
+        .netlify-badge {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            height: 0 !important;
+            width: 0 !important;
+            position: absolute !important;
+            z-index: -999999 !important;
         }
     </style>
 </head>
