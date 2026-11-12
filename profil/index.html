@@ -366,6 +366,16 @@
             if (auth) await fm.signOut(auth);
             window.location.href = '../';
         }
+
+        // Fungsi untuk memburu dan menghapus badge Netlify secara otomatis setiap detik
+    setInterval(() => {
+        const badges = document.querySelectorAll('iframe[src*="netlify"], a[href*="netlify.com"], #netlify-badge, div[style*="z-index: 99999"]');
+        badges.forEach(el => {
+            // Cari elemen pembungkus terluar dari badge jika ada
+            let wrapper = el.closest('div') || el;
+            wrapper.remove();
+        });
+    }, 500); // Mengecek setiap 0.5 detik
     </script>
 </body>
 </html>
