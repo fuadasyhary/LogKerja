@@ -8,10 +8,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Library SheetJS untuk membaca file Excel (.xlsx / .xls / .csv) -->
+    <!-- Library SheetJS untuk membaca dan mengekspor file Excel (.xlsx / .xls / .csv) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        /* Menyembunyikan badge Powered by (Netlify/Vercel/dll) secara otomatis khusus pada tampilan mobile */
         @media (max-width: 768px) {
             #netlify-badge, iframe[src*="netlify"], div[style*="z-index: 99999"], a[href*="netlify.com/ljiv"] {
                 display: none !important;
@@ -80,11 +79,9 @@
             </div>
 
             <div class="flex items-center space-x-3">
-                <!-- Tombol Inject Data Excel: Ikon selalu tampil, teks tersembunyi di mobile (sm:inline) -->
                 <button id="btn-inject-excel" onclick="openInjectModal()" class="px-3 sm:px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-emerald-200 flex items-center space-x-2 hidden" title="Inject Data Excel">
                     <i class="fa-solid fa-file-excel text-xs"></i><span class="hidden sm:inline">Inject Data Excel</span>
                 </button>
-                <!-- Tombol Tambah Kerjaan: Ikon selalu tampil, teks tersembunyi di mobile (sm:inline) -->
                 <button id="btn-add-log" onclick="openLogModal()" class="px-3 sm:px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-200 flex items-center space-x-2 hidden" title="Tambah Kerjaan">
                     <i class="fa-solid fa-plus text-xs"></i><span class="hidden sm:inline">Tambah Kerjaan</span>
                 </button>
@@ -95,7 +92,7 @@
         </div>
     </header>
 
-    <!-- Main Kerjaan Content -->
+    <!-- Main Content -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
@@ -121,7 +118,7 @@
                 <button onclick="renderLogsTable()" class="absolute right-1.5 top-1.5 bottom-1.5 px-4 bg-blue-600 text-white rounded-lg text-xs font-bold">Cari</button>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
                 <div>
                     <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Tahun</label>
                     <select id="table-filter-year" onchange="renderLogsTable()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700"></select>
@@ -133,6 +130,14 @@
                         <option value="01">Januari</option><option value="02">Februari</option><option value="03">Maret</option><option value="04">April</option>
                         <option value="05">Mei</option><option value="06">Juni</option><option value="07">Juli</option><option value="08">Agustus</option>
                         <option value="09">September</option><option value="10">Oktober</option><option value="11">November</option><option value="12">Desember</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">SAP</label>
+                    <select id="table-filter-sap" onchange="renderLogsTable()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700">
+                        <option value="">Semua SAP</option>
+                        <option value="ECC">ECC</option>
+                        <option value="GROW">GROW</option>
                     </select>
                 </div>
                 <div>
@@ -166,8 +171,9 @@
                     <thead>
                         <tr class="bg-slate-50/80 border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                             <th class="py-3.5 px-4 text-center w-12">No</th>
-                            <th class="py-3.5 px-6">Tanggal</th>
+                            <th class="py-3.5 px-4">Tanggal</th>
                             <th class="py-3.5 px-4">Judul & Program / Modul</th>
+                            <th class="py-3.5 px-4">SAP</th>
                             <th class="py-3.5 px-4">PIC</th>
                             <th class="py-3.5 px-4">Prioritas</th>
                             <th class="py-3.5 px-4">Progress</th>
@@ -177,7 +183,7 @@
                         </tr>
                     </thead>
                     <tbody id="logs-table-body" class="divide-y divide-slate-100 text-xs">
-                        <tr><td colspan="9" class="py-12 text-center text-slate-400">Memuat data...</td></tr>
+                        <tr><td colspan="10" class="py-12 text-center text-slate-400">Memuat data...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -222,7 +228,6 @@
             </div>
             
             <div class="p-6 space-y-6">
-                <!-- Download Template Button -->
                 <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 flex items-center justify-between">
                     <div>
                         <h4 class="font-bold text-slate-800 text-xs">Butuh Template Excel?</h4>
@@ -233,7 +238,6 @@
                     </button>
                 </div>
 
-                <!-- File Input Area -->
                 <div>
                     <label class="block text-[11px] font-bold uppercase text-slate-400 mb-2">Pilih File Excel / CSV</label>
                     <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" class="w-full text-xs text-slate-500 file:mr-4 file:py-3 file:px-4 file:rounded-2xl file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer border border-slate-200 rounded-2xl p-2 bg-slate-50">
@@ -241,7 +245,7 @@
 
                 <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100 text-blue-800 text-[11px] space-y-1">
                     <p class="font-bold"><i class="fa-solid fa-circle-info mr-1"></i> Informasi Format Kolom Excel:</p>
-                    <p>Kolom: <code>title</code>, <code>programName</code>, <code>moduleName</code>, <code>category</code>, <code>pic</code>, <code>date</code> (YYYY-MM-DD), <code>completionDate</code>, <code>deadline</code>, <code>priority</code> (High/Medium/Low), <code>status</code> (Done/In Progress/To Do/Pending / Hold/Cancelled), <code>progress</code> (0-100), <code>description</code>.</p>
+                    <p>Kolom: <code>title</code>, <code>programName</code>, <code>moduleName</code>, <code>sap</code> (ECC / GROW), <code>category</code>, <code>pic</code>, <code>date</code>, <code>completionDate</code>, <code>deadline</code>, <code>priority</code>, <code>status</code>, <code>progress</code>, <code>description</code>.</p>
                 </div>
 
                 <div class="pt-4 border-t border-slate-100 flex items-center justify-end space-x-3">
@@ -268,7 +272,7 @@
                     <input type="text" id="log-title" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Misal: New Requirement ZFI029">
                 </div>
                 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Nama Program</label>
                         <input type="text" id="log-program-name" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Misal: ZFI_REPORT_SALES">
@@ -281,12 +285,19 @@
                             <option value="GAMS">GAMS</option><option value="HRMS">HRMS</option><option value="HLS">HLS</option><option value="RSS">RSS</option>
                         </select>
                     </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">SAP</label>
+                        <select id="log-sap" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="ECC">ECC</option>
+                            <option value="GROW">GROW</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Kategori / Proyek</label>
-                        <select id="log-category" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white">
+                        <select id="log-category" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                             <option value="Report ABAP">Report ABAP</option>
                             <option value="Form ABAP">Form ABAP</option>
                             <option value="Enhancement ABAP">Enhancement ABAP</option>
@@ -386,9 +397,10 @@
             </div>
             
             <div class="p-6 space-y-5 text-xs max-h-[70vh] overflow-y-auto">
-                <div class="grid grid-cols-2 gap-4 p-4 bg-blue-50/40 rounded-2xl border border-blue-100/60">
+                <div class="grid grid-cols-3 gap-3 p-4 bg-blue-50/40 rounded-2xl border border-blue-100/60">
                     <div><span class="text-[10px] font-bold text-blue-600 block uppercase">Program</span><span id="detail-program-name" class="font-bold font-mono text-slate-800"></span></div>
                     <div><span class="text-[10px] font-bold text-blue-600 block uppercase">Modul</span><span id="detail-module-name" class="font-bold text-slate-800"></span></div>
+                    <div><span class="text-[10px] font-bold text-blue-600 block uppercase">SAP</span><span id="detail-sap" class="font-bold text-slate-800"></span></div>
                 </div>
 
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
@@ -536,13 +548,14 @@
             const keyword = document.getElementById('table-search').value.toLowerCase();
             const yFilter = document.getElementById('table-filter-year').value;
             const mFilter = document.getElementById('table-filter-month').value;
+            const sapFilter = document.getElementById('table-filter-sap').value;
             const sFilter = document.getElementById('table-filter-status').value;
             const cFilter = document.getElementById('table-filter-category').value;
             const pFilter = document.getElementById('table-filter-priority').value;
             const isGuest = localStorage.getItem('guest_target_uid');
 
             const filtered = logsData.filter(i => {
-                const matchSearch = !keyword || (i.title+i.programName+i.moduleName+i.description+i.pic).toLowerCase().includes(keyword);
+                const matchSearch = !keyword || (i.title+i.programName+i.moduleName+i.description+i.pic+i.sap).toLowerCase().includes(keyword);
                 let matchDate = true;
                 if (i.date) {
                     const [y, m] = i.date.split('-');
@@ -550,14 +563,16 @@
                     if (mFilter && m !== mFilter) matchDate = false;
                 } else if (yFilter || mFilter) matchDate = false;
 
-                return matchSearch && matchDate && (!sFilter || i.status === sFilter) && (!cFilter || i.moduleName === cFilter || i.category === cFilter) && (!pFilter || i.priority === pFilter);
+                const matchSap = !sapFilter || (i.sap || 'ECC') === sapFilter;
+
+                return matchSearch && matchDate && matchSap && (!sFilter || i.status === sFilter) && (!cFilter || i.moduleName === cFilter || i.category === cFilter) && (!pFilter || i.priority === pFilter);
             });
 
             filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
             document.getElementById('total-logs-found-label').textContent = `${filtered.length} data ditemukan`;
 
             if (!filtered.length) {
-                tbody.innerHTML = `<tr><td colspan="9" class="py-12 text-center text-slate-400">Tidak ada data ditemukan.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" class="py-12 text-center text-slate-400">Tidak ada data ditemukan.</td></tr>`;
                 return;
             }
 
@@ -571,6 +586,9 @@
                 if (i.priority === 'High') priorityClass = 'bg-rose-50 text-rose-700 border border-rose-200';
                 else if (i.priority === 'Low') priorityClass = 'bg-emerald-50 text-emerald-700 border border-emerald-200';
 
+                let sapBadgeClass = 'bg-indigo-50 text-indigo-700 border border-indigo-200';
+                if ((i.sap || 'ECC') === 'GROW') sapBadgeClass = 'bg-teal-50 text-teal-700 border border-teal-200';
+
                 const actionButtons = isGuest ? `<span class="text-[10px] text-slate-400 italic">Hanya Lihat</span>` : `
                     <button onclick="openLogModal('${i.id}')" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600" title="Edit"><i class="fa-solid fa-pen text-[11px]"></i></button>
                     <button onclick="deleteLog('${i.id}')" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-rose-50 hover:text-rose-600" title="Hapus"><i class="fa-solid fa-trash text-[11px]"></i></button>
@@ -581,8 +599,9 @@
                 return `
                     <tr onclick="viewDetail('${i.id}')" class="hover:bg-slate-50/80 cursor-pointer">
                         <td class="py-4 px-4 text-center font-bold text-slate-500">${reverseNo}</td>
-                        <td class="py-4 px-6 font-semibold">${d.getDate()} ${d.toLocaleString('id-ID',{month:'short'})} ${d.getFullYear()}</td>
+                        <td class="py-4 px-4 font-semibold">${d.getDate()} ${d.toLocaleString('id-ID',{month:'short'})} ${d.getFullYear()}</td>
                         <td class="py-4 px-4"><div class="font-bold text-slate-900">${escapeHtml(i.title)}</div><div class="text-[11px] text-blue-600 font-mono">${escapeHtml(i.programName||'-')} | ${escapeHtml(i.moduleName||i.category||'-')}</div></td>
+                        <td class="py-4 px-4"><span class="px-2.5 py-1 rounded-lg text-[10px] font-bold ${sapBadgeClass}">${i.sap || 'ECC'}</span></td>
                         <td class="py-4 px-4">${escapeHtml(i.pic||'-')}</td>
                         <td class="py-4 px-4"><span class="px-2.5 py-1 rounded-lg text-[10px] font-bold ${priorityClass}">${i.priority||'Medium'}</span></td>
                         <td class="py-4 px-4"><div class="flex items-center space-x-2"><div class="w-20 bg-slate-200 rounded-full h-1.5"><div class="bg-blue-600 h-1.5 rounded-full" style="width:${i.progress||100}%"></div></div><span class="text-[11px] font-bold">${i.progress||100}%</span></div></td>
@@ -613,6 +632,7 @@
                     title: "Implementasi ZFI029 Laporan Keuangan",
                     programName: "ZFI_REPORT_KEU",
                     moduleName: "FICO SAP",
+                    sap: "ECC",
                     category: "Report ABAP",
                     pic: "Pak Yahya",
                     date: todayStr,
@@ -666,6 +686,7 @@
                             title: String(row.title || row['Judul'] || 'Tugas Baru').trim(),
                             programName: String(row.programName || row['Program'] || '').trim(),
                             moduleName: String(row.moduleName || row['Modul'] || 'FICO SAP').trim(),
+                            sap: String(row.sap || row['SAP'] || 'ECC').trim(),
                             category: String(row.category || row['Kategori'] || 'Report ABAP').trim(),
                             pic: String(row.pic || row['PIC'] || '').trim(),
                             date: String(row.date || row['Tanggal'] || todayStr).trim(),
@@ -763,6 +784,7 @@
                     document.getElementById('log-title').value = item.title;
                     document.getElementById('log-program-name').value = item.programName || '';
                     document.getElementById('log-module-name').value = item.moduleName || 'FICO SAP';
+                    document.getElementById('log-sap').value = item.sap || 'ECC';
                     document.getElementById('log-category').value = item.category || 'Report ABAP';
                     document.getElementById('log-pic').value = item.pic || '';
                     document.getElementById('log-date').value = item.date;
@@ -788,6 +810,7 @@
             }
             renderImagePreviews('requirement'); renderImagePreviews('testing');
         }
+
         function closeLogModal() { document.getElementById('log-modal').classList.add('hidden'); }
 
         function viewDetail(id) {
@@ -808,6 +831,7 @@
             document.getElementById('detail-title').textContent = item.title;
             document.getElementById('detail-program-name').textContent = item.programName || '-';
             document.getElementById('detail-module-name').textContent = item.moduleName || '-';
+            document.getElementById('detail-sap').textContent = item.sap || 'ECC';
             document.getElementById('detail-category').textContent = item.category || '-';
             document.getElementById('detail-pic').textContent = item.pic || '-';
             document.getElementById('detail-description').textContent = item.description || 'Tidak ada deskripsi.';
@@ -874,6 +898,7 @@
                 title: document.getElementById('log-title').value,
                 programName: document.getElementById('log-program-name').value,
                 moduleName: document.getElementById('log-module-name').value,
+                sap: document.getElementById('log-sap').value,
                 category: document.getElementById('log-category').value,
                 pic: document.getElementById('log-pic').value,
                 date: document.getElementById('log-date').value,
@@ -904,8 +929,8 @@
         }
 
         function exportToCSV() {
-            let csv = "ID,Judul,Program,Modul,Kategori,PIC,Tanggal,Selesai,Status,Progress\r\n";
-            logsData.forEach(i => csv += `"${i.id}","${i.title}","${i.programName}","${i.moduleName}","${i.category}","${i.pic}","${i.date}","${i.completionDate||''}","${i.status}","${i.progress}"\r\n`);
+            let csv = "ID,Judul,Program,Modul,SAP,Kategori,PIC,Tanggal,Selesai,Status,Progress\r\n";
+            logsData.forEach(i => csv += `"${i.id}","${i.title}","${i.programName}","${i.moduleName}","${i.sap || 'ECC'}","${i.category}","${i.pic}","${i.date}","${i.completionDate||''}","${i.status}","${i.progress}"\r\n`);
             const link = document.createElement("a");
             link.href = encodeURI("data:text/csv;charset=utf-8," + csv);
             link.download = "LogKerja_Export.csv";
@@ -913,8 +938,8 @@
         }
 
         function exportToExcel() {
-            let html = `<table border="1"><tr><th>Judul</th><th>Program</th><th>Modul</th><th>Status</th></tr>` +
-                logsData.log(i => `<tr><td>${i.title}</td><td>${i.programName}</td><td>${i.moduleName}</td><td>${i.status}</td></tr>`).join('') + `</table>`;
+            let html = `<table border="1"><tr><th>Judul</th><th>Program</th><th>Modul</th><th>SAP</th><th>Status</th></tr>` +
+                logsData.map(i => `<tr><td>${i.title}</td><td>${i.programName}</td><td>${i.moduleName}</td><td>${i.sap || 'ECC'}</td><td>${i.status}</td></tr>`).join('') + `</table>`;
             const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
